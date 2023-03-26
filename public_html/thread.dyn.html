@@ -1,5 +1,4 @@
 <?include header.priv.html ?>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <script src="/static/js/forum.js"></script>
 <div class="container padd-16 content">
 <?lu
@@ -58,7 +57,7 @@
         |               </div>
         |               <br>
         |               <span class="emote" onclick="like(this)" data-post="#[[post.id]]" csrf="#[[to_url('/like', {id=post.id, user=session.logged and session.logged.id or 0})]]">
-        |                   <i class="fa fa-heart-o react-emote"></i> <span class="count">#[[post.likeCount]]</span>
+        |                   ❤️ <span class="count">#[[post.likeCount]]</span>
         |               </span>
         |           </div>
         |       </div>

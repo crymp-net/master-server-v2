@@ -41,10 +41,10 @@
         |               <small style="float: right">
             if session.logged then
                 if session.logged.id == post.author.id then
-        |                   <span><a href="#[[to_url('/edit_post', {id=post.id, thread=thread.id, user=session.logged.id})]]">Edit post</a>&nbsp;-&nbsp;</span>
+        |                   <span><a href="#[[to_url('/edit_post', {id=post.id, thread=thread.id, user=session.logged.id, iv=true})]]">Edit post</a>&nbsp;-&nbsp;</span>
                 end
                 if session.logged.rights >= 4 then
-        |                   <span><a href="#[[to_url('/trash', {id=post.id, user=session.logged.id})]]">Remove post</a>&nbsp;-&nbsp;</span>
+        |                   <span><a href="#[[to_url('/trash', {id=post.id, user=session.logged.id, iv=true})]]">Remove post</a>&nbsp;-&nbsp;</span>
                 end
             end
         |                   <time datetime="#[[isodate(post.createdAt)]]" with-time>#[[isodate(post.createdAt)]]</time>
@@ -56,7 +56,7 @@
                         write(crymp.web:encodePostText(post.text))
         |               </div>
         |               <br>
-        |               <span class="emote" onclick="like(this)" data-post="#[[post.id]]" csrf="#[[to_url('/like', {id=post.id, user=session.logged and session.logged.id or 0})]]">
+        |               <span class="emote" onclick="like(this)" data-post="#[[post.id]]" csrf="#[[to_url('/like', {id=post.id, user=session.logged and session.logged.id or 0, iv=true})]]">
         |                   ❤️ <span class="count">#[[post.likeCount]]</span>
         |               </span>
         |           </div>
@@ -69,7 +69,7 @@
 
         if session.logged then
         | <br style="clear: both">
-        |   <form action="#[[to_url('/thread', {user=session.logged.id, id=thread.id})]]" method="post">
+        |   <form action="#[[to_url('/thread', {user=session.logged.id, id=thread.id, iv=true})]]" method="post">
         |       <link rel="stylesheet" href="/static/css/forum.css">
         |       <div class="tp">
         |           <button onclick="put('quote'); return false;">quote</button>

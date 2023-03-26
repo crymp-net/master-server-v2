@@ -21,7 +21,7 @@
     local thread = query.id or nil
     local rights = session.logged and session.logged.rights or 1
     if thread then
-        thread = await(crymp:getForumThread(thread, rights, query.page or 0, 10))
+        thread = await(crymp.web:getForumThread(thread, rights, query.page or 0, 10))
     end
     if not thread then
         | <h1>Invalid thread</h1>
@@ -54,7 +54,7 @@
         |           </div>
         |           <div class="post-content">
         |               <div class="post-itself" style="white-space: break-spaces" id="pc#[[post.id]]">
-                        write(crymp:encodePostText(post.text))
+                        write(crymp.web:encodePostText(post.text))
         |               </div>
         |               <br>
         |               <span class="emote" onclick="like(this)" data-post="#[[post.id]]" csrf="#[[to_url('/like', {id=post.id, user=session.logged and session.logged.id or 0})]]">

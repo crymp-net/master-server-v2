@@ -6,7 +6,7 @@
     if session.logged then
         rights = session.logged.rights
     end
-    local forum = await(crymp:getForum(rights))
+    local forum = await(crymp.web:getForum(rights))
 
     function threadRow(thread)
     ```

@@ -1,7 +1,7 @@
 local db = require("crymp.db")
 local aio = require("aio.aio")
-local web_ui = require("crymp.web_ui")
-local web_api = require("crymp.web_api")
+local web_ui = loadfile("crymp/web_ui.lua")()
+local web_api = loadfile("crymp/web_api.lua")()
 
 crymp = {
     web = web_ui,
@@ -13,6 +13,8 @@ Posts = db.posts
 Threads = db.threads
 Subcategories = db.subcategories
 Categories = db.categories
+
+local USER_SALT = os.getenv("USER_SALT") or "user-salt"
 
 function hex(bytes)
     --- @type string[]|integer[]
@@ -36,7 +38,7 @@ function hash_sha1(text)
 end
 
 function hash_password(text)
-    return hash(hash_sha1(text) .. "S11!.bCxD");
+    return hash(hash_sha1(text) .. USER_SALT);
 end
 
 function keys(dict)

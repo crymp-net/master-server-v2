@@ -1,5 +1,5 @@
 local db = require("crymp.db")
-local DELETED_USER = {display="Deleted user", id=0, rights=4}
+local DELETED_USER = {display="Aztec", id=0, rights=4}
 
 --- @class web_ui
 local web = {}

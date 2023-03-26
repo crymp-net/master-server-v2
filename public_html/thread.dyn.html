@@ -1,0 +1,112 @@
+<?include header.priv.html ?>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<script src="/static/js/forum.js"></script>
+<div class="container padd-16 content">
+<?lu
+    local function pager(id, page, pages)
+    |   <div style="padding: 4px; float: right;"><strong>Page:
+        for i=0, pages do
+    |       <span>
+            if i == page then
+    |           <span class="page page-active">#[[i + 1:d]]</span>
+            else
+    |           <a class="page" href="#[[to_url('/thread', {id=id, page=i + 1, e=false})]]">#[[i + 1:d]]</a>
+            end
+    |       </span>&#32;
+        end
+    |   &nbsp;
+    |   </strong></div>
+    end
+
+    local thread = query.id or nil
+    local rights = session.logged and session.logged.rights or 1
+    if thread then
+        thread = await(crymp:getForumThread(thread, rights, query.page or 0, 10))
+    end
+    if not thread then
+        | <h1>Invalid thread</h1>
+        return
+    else
+        | <h1>#[[thread.name]]</h1>
+        pager(thread.id, thread.page, thread.pages)
+        | <br style="clear: both">
+        | <ul class="list-unstyled thread">
+        for i, post in ipairs(thread.posts) do
+        |     <li class="media post" id="p#[[post.id]]">
+        |       <div class="hidden-xs d-flex mr-3 pull-left profile-pic" style="background-image: url('#[[post.author.picture]]')"></div>
+        |       <div class="media-body" style="max-width: calc(100vw - 12px); overflow: auto; word-break: break-word">
+        |           <div>
+        |               <h5 class="mt-0 mb-1 thread-user" style="float: left">
+        |                   <b><a href="#[[to_url('/profile', {id=post.author.id})]]" class="user#[[post.author.rights]]">#[[post.author.display]]</a></b>
+        |               </h5>
+        |               <small style="float: right">
+            if session.logged then
+                if session.logged.id == post.author.id then
+        |                   <span><a href="#[[to_url('/edit_post', {id=post.id, user=session.logged.id})]]">Edit post</a>&nbsp;-&nbsp;</span>
+                end
+                if session.logged.rights >= 4 then
+        |                   <span><a href="#[[to_url('/trash', {id=post.id, user=session.logged.id})]]">Remove post</a>&nbsp;-&nbsp;</span>
+                end
+            end
+        |                   <time datetime="#[[isodate(post.createdAt)]]" with-time>#[[isodate(post.createdAt)]]</time>
+        |               </small>
+        |               <br style="clear: both">
+        |           </div>
+        |           <div class="post-content">
+        |               <div class="post-itself" style="white-space: break-spaces" id="pc#[[post.id]]">
+                        write(crymp:encodePostText(post.text))
+        |               </div>
+        |               <br>
+        |               <span class="emote" onclick="like(this)" data-post="#[[post.id]]" csrf="#[[to_url('/like', {id=post.id, user=session.logged and session.logged.id or 0})]]">
+        |                   <i class="fa fa-heart-o react-emote"></i> <span class="count">#[[post.likeCount]]</span>
+        |               </span>
+        |           </div>
+        |       </div>
+        |     </li>
+        end
+        | </ul>
+
+        pager(thread.id, thread.page, thread.pages)
+
+        if session.logged then
+        | <br style="clear: both">
+        |   <form th:if="${logged != null}" action="/thread" method="post">
+        |       <link rel="stylesheet" href="/static/css/forum.css">
+        |       <div class="tp">
+        |           <button onclick="put('quote'); return false;">quote</button>
+        |           <button onclick="put('b'); return false;">
+        |               <b>B</b>
+        |           </button>
+        |           <button onclick="put('i'); return false;">
+        |               <i>i</i>
+        |           </button>
+        |           <button onclick="put('u'); return false;">
+        |               <u>u</u>
+        |           </button>
+        |           <button onclick="put('small'); return false;">
+        |               <small>small</small>
+        |           </button>
+        |           <button onclick="put('h1'); return false;">
+        |               <b>H1</b>
+        |           </button>
+        |           <button onclick="put('h2'); return false;">
+        |               <b>H2</b>
+        |           </button>
+        |           <button onclick="put('h3'); return false;">
+        |               <b>H3</b>
+        |           </button>
+        |           <button onclick="put('code'); return false;">code</button>
+        |           <button onclick="put('img'); return false;">image</button>
+        |           <button onclick="put('yt'); return false;">youtube</button>
+        |       </div>
+        |       <textarea name="text" placeholder="Write post" class="nice-input no-margin full-input ta-input" id="ta"></textarea>
+        |       <br>
+        |       <input type="submit" style="width: 100%" value="Add post" class="nice-button no-margin" name="submit">
+        |       <input type="hidden" name="id" value="#[[thread.id]]">
+        |       <input type="hidden" name="csrf" value="#[[to_url('/thread', {id=thread.id, user=session.logged.id})]]">
+        |   </form>
+        end
+    end
+?>
+</div>
+<?include footer.priv.html ?>

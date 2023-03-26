@@ -1,0 +1,18 @@
+<?include header.priv.html ?>
+<div class="container padd-16 horizontal-center">
+    <h1>Log-in</h1>
+    <form action="/login" method="post">
+        <input name="email" type="email" class="nice-input" placeholder="Your e-mail">
+        <br>
+        <input name="password" type="password" class="nice-input" placeholder="Your password">
+        <br>
+        <input type="submit" name="submit" class="nice-button" value="Log-in">
+    </form>
+    <p>Don't have an account yet? <a href="/signup">Sign-up</a></p>
+    <?lu
+        if query.errors then
+            -- do something
+        end
+    ?>
+</div>
+<?include footer.priv.html ?>

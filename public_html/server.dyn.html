@@ -1,0 +1,35 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    query = query.e
+    if not query.ip or not query.port then
+        | <h1>Invalid server</h1>
+    else
+        local server = await(crymp:getServer(query.ip, query.port))
+        if not server then
+            | <h1>Server is not online</h1>
+        else
+            | <div class="serverline">
+            |   <div class="hidden-xs hidden-sm image">
+            local map_sanitized = (server.map or ""):lower():gsub("/", "_")
+            local possible_path = "/static/images/maps/" .. map_sanitized .. ".jpg"
+            |       <object data="#[[possible_path]]" type="image/jpeg">
+            |           <img src="/static/images/map404.png">
+            |       </object>
+            |   </div>
+            |   <div class="serverinfo">
+            |       <h1>#[[server.name]]</h1>
+            |       <h4>
+            |           <p>Players: <span>#[[server.numPlayers]]/#[[server.maxPlayers]]</span></p>
+            |           <p>Map: <span>#[[server.mapName or server.map]]</span></p>
+            |           <p>Game rules: <span>#[[crymp:getGameRules(server.map)]]</span></p>
+            |           <p>Time left: <span>#[[crymp:formatTime(server.timeLeft)]]</span>
+            |           </p>
+            |       </h4>
+            |   </div>
+            | </div>
+        end
+    end
+?>
+</div>
+<?include footer.priv.html ?>

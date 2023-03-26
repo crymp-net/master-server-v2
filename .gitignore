@@ -1,0 +1,7 @@
+*.local.env
+*.local.lua
+*.local.c
+*.local.sh
+*.local.txt
+private/
+local/

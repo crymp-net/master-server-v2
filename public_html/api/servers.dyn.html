@@ -1,0 +1,9 @@
+<?lu
+    header("content-type", "application/json; charset=utf-8")
+    local servers = _G.SERVERS
+    if servers == nil then
+        servers = await(crymp:getServers())
+        _G.SERVERS = servers
+    end
+    write(servers)
+?>

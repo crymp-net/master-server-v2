@@ -1,0 +1,91 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    local function write_server_header(server)
+        local online = server.numPlayers or 0
+        | <div class="server-info cell">
+        |    <div class="server-name">
+        if online > 0 then 
+        |       <span class="online-dot"></span>
+        end
+        |       <a href="#[[to_url('/server', {ip=server.ip, port=server.port})]]">#[[(server.password or "0") == "0" and "🔐 " or ""]]#[[server.name or "No name"]]</a>
+        |   </div>
+            if server.description ~= nil and #server.description > 0 then
+        |   <div class="server-desc">#[[server.description or ""]]</div>
+            end
+        |   <div class="server-stats">
+        |        <table>
+        |            <tr class="bold">
+        |                <td>Players:</td>
+        |                <td>#[[server.numPlayers or 0:d]]/#[[server.maxPlayers or 32:d]]</td>
+        |            </tr>
+        |            <tr>
+        |                <td>Map:</td>
+        |                <td>#[[server.mapName]]</td>
+        |            </tr>
+        |            <tr>
+        |                <td>Game rules:</td>
+        |                <td>#[[crymp:getGameRules(server.map)]]</td>
+        |            </tr>
+        |            <tr>
+        |                <td>Time left:</td>
+        |                <td>#[[crymp:formatTime(time_left)]]</td>
+        |            </tr>
+        |        </table>
+        |    </div>
+        | </div>
+    end
+
+    local function write_server_players(server)
+        local players = crymp:exportPlayers(server.players)
+        | <div class="players-list cell">
+        |    <table>
+        |        <tr>
+        |            <th>Players</th>
+        |            <th>K</th>
+        |            <th>D</th>
+        |        </tr>
+        for i, player in ipairs(players) do
+        |       <tr>
+        |           <td>#[[player.name]]</td>
+        |           <td>#[[player.kills:d]]</td>
+        |           <td>#[[player.deaths:d]]</td>
+        |       </tr>
+        end
+        |    </table>
+        | </div>
+    end
+
+    local servers, err = await(crymp:getServers())
+    if not servers then
+        | <h1>Failed to fetch servers from database</h1>
+    elseif #servers == 0 then
+        | <h1>No servers available right now</h1>
+    else
+        | <div class="hidden-xs hidden-sm serverlist-large">
+        for i, server in ipairs(servers) do
+            local online = server.numPlayers
+        |   <div class="serveritem-large">
+        |       <div class="flex-full">
+        |           <div class="image cell changeable">
+        local map_sanitized = (server.map or ""):lower():gsub("/", "_")
+        local possible_path = "/static/images/maps/" .. map_sanitized .. ".jpg"
+        |               <object data="#[[possible_path]]" type="image/jpeg">
+        |                   <img src="/static/images/map404.png">
+        |               </object>
+        |            </div>
+                    write_server_header(server)
+                    if online == 0 then
+        |               <div class="players-list cell flex-center">
+        |                   <small class="no-players">There are no players online now</small>
+        |               </div>
+                    else
+                        write_server_players(server)
+                    end
+        |       </div>
+        |   </div>
+        end
+    end
+?>
+</div>
+<?include footer.priv.html ?>

@@ -1,0 +1,25 @@
+<?include header.priv.html ?>
+<div class="bg">
+    <?lu | <div id="wrap" data-image="#[[IMAGE_OF_THE_DAY or 1:d]]" style="position: fixed; width: 100%; height: 100vh; left: 0px; top: 0px"></div> ?>
+    <div class="cell">
+        <div class="cell-content">
+            <h1>JOIN THE BATTLE</h1>
+            <a class="primary-button hidden-sm hidden-xs" style="font-weight: 600; font-size: 1.61em;" target="_blank" th:href="@{/client?key={key}&ver=beta(key=${client})}" rel="nofollow">Play now</a>
+            <?lu
+                if activePlayers == 0 then
+                    | <a class="primary-button hidden-md hidden-lg" href="/servers">Servers</a>
+                elseif activePlayers == 1 then
+                    | <a class="primary-button hidden-md hidden-lg" href="/servers">Servers (<b><span>#[[activePlayers]]</span><span> player online</span></b>)</a>
+                else
+                    | <a class="primary-button hidden-md hidden-lg" href="/servers">Servers (<b><span>#[[activePlayers]]</span><span> players online</span></b>)</a>
+                end
+            ?>
+            <a class="secondary-button" href="/faq" rel="nofollow" target="_blank">Read instructions</a>
+            <a class="secondary-button" href="https://discord.gg/kY8hb2n" rel="nofollow" target="_blank">Join us at Discord</a>
+            <a class="hidden-sm hidden-xs" style="font-weight: 600; text-shadow: 0px 0px 7px black;" target="_blank" th:href="@{/client?key={key}&ver=rc(key=${client})}" rel="nofollow">... or download the old client</a>
+        </div>
+    </div>
+</div> 
+<script src="/static/js/lib/pixi.min.js"></script>
+<script src="/static/js/3d-background.js"></script>
+<?include footer.priv.html ?>

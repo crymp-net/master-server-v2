@@ -1,0 +1,255 @@
+.footer,
+body {
+    background-color: #161b1d;
+    color: #fff
+}
+
+::placeholder {
+    color: #888;
+    opacity: 1
+}
+
+.with-bg {
+    background-color: #000
+}
+
+.nice-table .header {
+    background-color: #1a1f21
+}
+
+.nice-table .normal:nth-child(even) {
+    background-color: #222729
+}
+
+.nice-table .normal:nth-child(odd) {
+    background-color: #262b2d
+}
+
+.nice-table .normal-0 {
+    background-color: #222729
+}
+
+.nice-table .normal-1 {
+    background-color: #262b2d
+}
+
+.nice-table .normal,
+.nice-table .normal-0,
+.nice-table .normal-1 {
+    border-bottom: none
+}
+
+.nav li a:hover,
+.nav li.active a {
+    color: #f90
+}
+
+a,
+a:active,
+a:visited {
+    color: #f90
+}
+
+.footer a,
+.footer a:active,
+.footer a:focus,
+.footer a:visited,
+.wrapper-ns a,
+.wrapper-ns a:active,
+.wrapper-ns a:focus,
+.wrapper-ns a:visited {
+    color: #f90
+}
+
+.footer a.page,
+.footer a:active.page,
+.footer a:focus.page,
+.footer a:visited.page,
+.wrapper-ns a.page,
+.wrapper-ns a:active.page,
+.wrapper-ns a:focus.page,
+.wrapper-ns a:visited.page {
+    color: #f0017c
+}
+
+.footer a.page.active-page,
+.footer a:active.page.active-page,
+.footer a:focus.page.active-page,
+.footer a:visited.page.active-page,
+.wrapper-ns a.page.active-page,
+.wrapper-ns a:active.page.active-page,
+.wrapper-ns a:focus.page.active-page,
+.wrapper-ns a:visited.page.active-page {
+    color: #fff
+}
+
+.footer a.post-link,
+.footer a:active.post-link,
+.footer a:focus.post-link,
+.footer a:visited.post-link,
+.wrapper-ns a.post-link,
+.wrapper-ns a:active.post-link,
+.wrapper-ns a:focus.post-link,
+.wrapper-ns a:visited.post-link {
+    color: #00bfff
+}
+
+.footer .donate {
+    font-weight: 600
+}
+
+.api-key {
+    background: #840;
+    color: #fff
+}
+
+.navbar a {
+    color: #fff
+}
+
+.nav>li>a:focus,
+.nav>li>a:hover {
+    background-color: rgba(0, 0, 0, .1)
+}
+
+.navbar-toggle .icon-bar {
+    background-color: #fff
+}
+
+.navbar-collapse.collapse.in,
+.navbar-collapse.collapsing {
+    background-color: #000;
+    z-index: 2;
+    position: relative
+}
+
+a.user4,
+a.user4:active,
+a.user4:focus,
+a.user4:visited {
+    color: #f0017c;
+    font-weight: 700
+}
+
+.recent {
+    color: #93d52b
+}
+
+.nice-input {
+    border: 1px solid #161b1d;
+    background-color: #222729;
+    color: #fff
+}
+
+.nice-button {
+    background-color: #23282a;
+    border: 1px solid #161b1d;
+    color: #fff
+}
+
+optgroup {
+    background-color: #111517;
+    padding: 3px;
+    color: #fff
+}
+
+.chat-wrapper {
+    background-color: #161b1d
+}
+
+.thread {
+    background: #222729
+}
+
+.thread .post:nth-child(even) {
+    background-color: #262b2d
+}
+
+.thread .post:nth-child(odd) {
+    background-color: #222729
+}
+
+.serverlist-large {
+    background-color: #22262a
+}
+
+.serverlist-large .serveritem-large:nth-child(odd) {
+    background-color: #22262a
+}
+
+.serverlist-large .serveritem-large:nth-child(odd) .server-desc {
+    background-color: #282c30
+}
+
+.serverlist-large .serveritem-large:nth-child(odd) .server-stats table {
+    background-color: #25292d
+}
+
+.serverlist-large .serveritem-large:nth-child(odd) .players-list {
+    background-color: #282c30
+}
+
+.serverlist-large .serveritem-large:nth-child(even) {
+    background-color: #2a2f31
+}
+
+.serverlist-large .serveritem-large:nth-child(even) .server-desc {
+    background-color: #303436
+}
+
+.serverlist-large .serveritem-large:nth-child(even) .server-stats table {
+    background-color: #2c3133
+}
+
+.serverlist-large .serveritem-large:nth-child(even) .players-list {
+    background-color: #303436
+}
+
+.serverlist-large .serveritem-large .players-list table tr th {
+    color: #f90
+}
+
+.online-dot {
+    background: #5f4
+}
+
+.category-name {
+    background-color: #000;
+    color: #fff
+}
+
+.quote {
+    border-color: #4a4f51;
+    background-color: #2a2f31
+}
+
+.bump {
+    background-color: #000
+}
+
+.post-table tr:nth-child(even) {
+    background-color: #222729
+}
+
+.post-table tr:nth-child(odd) {
+    background-color: #262b2d
+}
+
+.post-table tr:first-child {
+    background-color: #1a1f21 !important
+}
+
+@media (min-width:1199px) {
+    body {
+        background: url(/static/images/crymp_bgbg.png) repeat-x fixed center 0 #161b1d;
+        background-attachment: fixed
+    }
+
+    .subcategories .subcategory-1 .subcategory-name {
+        background-color: #1d2224
+    }
+
+    .subcategories .subcategory-0 .subcategory-name {
+        background-color: #1a1f21
+    }
+}

@@ -1,0 +1,81 @@
+<?include header.priv.html ?>
+<script src="/static/js/forum.js"></script>
+<div class="container padd-16 content">
+<?lu
+    local rights = 1
+    if session.logged then
+        rights = session.logged.rights
+    end
+    local forum = await(crymp:getForum(rights))
+
+    function threadRow(thread)
+    ```
+    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+        <a class="thread-link" rel="ugc" href="#[[to_url('/thread', {id=thread.id, page='last', e=false})]]">#[[thread.name]]</a>
+        <div class="hidden-md hidden-lg">
+            <div>
+                <small>
+                    Last post by <a class="user1" href="#[[to_url('/profile', {id=thread.lastPostBy.id})]]">Nomad</a> - <time datetime="#[[isodate(thread.lastPostTime)]]" relative-time>#[[isodate(thread.lastPostTime)]]</time>
+                </small>
+            </div>
+            <div>
+                <small>
+                    Created by <a class="user1" href="#[[to_url('/profile', {id=thread.author.id})]]">#[[thread.author.display]]</a> - <time datetime="#[[isodate(thread.createdAt)]]" relative-time>#[[isodate(thread.createdAt)]]</time>
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="hidden-xs hidden-sm col-md-6 col-lg-6">
+        <div>
+            <small>
+                    Last post by <a class="user#[[thread.lastPostBy.rights]]" href="#[[to_url('/profile', {id=thread.lastPostBy.id})]]">#[[thread.lastPostBy.display]]</a> - <time datetime="#[[isodate(thread.lastPostTime)]]" relative-time>#[[isodate(thread.lastPostTime)]]</time>
+            </small>
+        </div>
+        <div>
+            <small>
+                    Created by <a class="user#[[thread.author.rights]]" href="#[[to_url('/profile', {id=thread.author.id})]]">#[[thread.author.display]]</a> - <time datetime="#[[isodate(thread.createdAt)]]" relative-time>#[[isodate(thread.createdAt)]]</time>
+            </small>
+        </div>
+    </div>
+    ```
+    end
+
+    local counter, threadCounter = 0, 0
+    for i, category in ipairs(forum) do
+    | <div class="category">
+    |   <div class="row header category-name hidden-xs hidden-sm">#[[category.name]]</div>
+    |   <div class="subcategories">
+        for j, subcategory in ipairs(category.subcategories) do
+            counter = counter + 1
+            if counter > 1 then
+                counter = 0
+            end
+    |       <div class="nice-table subcategory subcategory-#[[counter]]">
+            if subcategory.id > 0 then
+    |           <a class="row header subcategory-name" style="cursor: pointer" href="/subc?sid=#[[subcategory.id]]">
+    |               <div class="col-xs-12 subcategory-name-link">#[[subcategory.name]]</div>
+    |           </a>
+            else
+    |           <div class="row header subcategory-name">
+    |               <div class="col-xs-12 subcategory-name-link-inactive">#[[subcategory.name]]</div>
+    |           </div>
+            end
+    |           <div class="threads">
+                for k, thread in ipairs(subcategory.threads) do
+                    threadCounter = threadCounter + 1
+                    if threadCounter > 1 then
+                        threadCounter = 0
+                    end
+    |               <div style="display: flex; align-items: center" class="row normal-#[[threadCounter]] thread-row">
+                        threadRow(thread)
+    |               </div>
+                end
+    |           </div>
+    |       </div>
+        end
+    |   </div>
+    | </div>
+    end
+?>
+</div>
+<?include footer.priv.html ?>

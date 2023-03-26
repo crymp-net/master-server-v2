@@ -1,0 +1,57 @@
+<?include shared.priv.html ?>
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/main.min.css" rel="stylesheet">
+    <link href="/static/css/dark.min.css" rel="stylesheet">
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/bootstrap.min.js"></script>
+    <title>Crysis 1 multiplayer network</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-themed navbar-fixed-top with-bg">
+        <div class="container">
+            <div class="navbar-header">
+                <button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed"
+                    data-target="#navbar" data-toggle="collapse" type="button">
+                    <span class="sr-only">Navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">CryMP.net</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="nav navbar-nav">
+                    <?lu
+                        local activePlayers = await(crymp:getActivePlayers())
+                        local extra = string.format([[ (<b><span>%d</span><span class="hidden-sm"> players online</span></b>)]], activePlayers)
+                        if activePlayers == 0 then
+                            extra = ""
+                        end
+                        write([[<li class="servers"><a href="/servers">Servers ]] .. extra .. [[</a>]])
+                    ?>
+                    <li><a href="/forum">Forum</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <?lu
+                        if session.logged then
+                            | <li><a href="#[[to_url('/profile', {id=session.logged.id})]]">My profile</a>
+                            | <li><a href="/logout">Log-out</a></li>
+                        else
+                            | <li><a href="/login">Log-in</a></li>
+                        end
+                    ?>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="bump"></div>
+    <div class="scroller">
+        <div class="wrapper-ns">

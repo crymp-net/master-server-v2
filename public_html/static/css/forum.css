@@ -1,0 +1,35 @@
+.tp {
+  display: flex;
+  max-width: calc(100vw - 32px);
+  overflow: auto;
+}
+
+.tp button {
+  display: flex;
+  flex-grow: 1;
+  background: black;
+  border: 0px;
+  align-items: center;
+  align-content: center;
+  flex-direction: column;
+  text-align: center;
+  color: white;
+  border: 2px solid #333;
+  border-radius: 0px;
+  outline: none;
+  flex-basis: 0;
+}
+
+.tp button:focus,
+.tp button:active {
+  outline: none;
+  background: #333;
+}
+
+.tp button:hover {
+  background: #222;
+}
+
+.errinput {
+  border: 1px solid red;
+}

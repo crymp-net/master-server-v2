@@ -1,0 +1,14 @@
+<?include shared.priv.html ?>
+<?lu
+    local params = aio:parse_query(body)
+    status("302 Temporary redirect")
+    if params.password and params.email then
+        local found = await(crymp:getUser{ email=params.email })
+        if found and found.password == hash_password(params.password) then
+            header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; HttpOnly")
+            header("location", "/")
+            return
+        end
+    end
+    header("location", "/login?errors=1")
+?>

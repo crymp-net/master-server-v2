@@ -141,6 +141,49 @@ function web:getForumThread(id, rights, page, perPage)
     return resolver
 end
 
+--- Add forum post
+---@param user {id: integer} user that is logged in
+---@param thread_id integer thread ID
+---@param text string post text
+---@return orminsert 
+function web:addForumThreadPost(user, thread_id, text)
+    -- we can trust that user has access to given thread as otherwise signed query wouldn't fit
+    local now = os.time()
+    local resolve, resolver = aio:prepare_promise()
+    db.posts:insert({
+        author = user.id,
+        createdAt = now,
+        text = text,
+        thread = thread_id,
+        likeCount = 0,
+        invisible = 0
+    })(function (result)
+        if result.error then
+            resolve(nil)
+        else
+            local postId = result.last_insert_id
+            db.threads:update({id = thread_id}, {
+                lastPostId = postId,
+                lastPostTime = now
+            })(function (result)
+                resolve(postId)
+            end)
+        end
+    end)
+    return resolver
+end
+
+function web:updateForumThreadPost(user, threadId, postId, text)
+    return db.posts:update({id = postId}, {text=text})
+end
+
+--- Get forum post by ID
+---@param postId integer
+---@return aiopromise<{id: integer}> promise
+function web:getPostById(postId)
+    return db.posts.one:byId(postId)
+end
+
 function web:encodePostText(text)
     return aio:cached("post", text, function()
         text = codec.html_encode(text)

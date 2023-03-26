@@ -95,6 +95,7 @@ local posts = orm:create(sql, {
         invisible = { field="invisible", type=orm.t.int }
     },
     findByThread = true,
+    findById = true,
     findAuthorByIdIn = "SELECT id, author FROM f_posts WHERE id IN %s"
 })
 

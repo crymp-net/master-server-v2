@@ -41,7 +41,7 @@
         |               <small style="float: right">
             if session.logged then
                 if session.logged.id == post.author.id then
-        |                   <span><a href="#[[to_url('/edit_post', {id=post.id, user=session.logged.id})]]">Edit post</a>&nbsp;-&nbsp;</span>
+        |                   <span><a href="#[[to_url('/edit_post', {id=post.id, thread=thread.id, user=session.logged.id})]]">Edit post</a>&nbsp;-&nbsp;</span>
                 end
                 if session.logged.rights >= 4 then
         |                   <span><a href="#[[to_url('/trash', {id=post.id, user=session.logged.id})]]">Remove post</a>&nbsp;-&nbsp;</span>
@@ -69,7 +69,7 @@
 
         if session.logged then
         | <br style="clear: both">
-        |   <form th:if="${logged != null}" action="/thread" method="post">
+        |   <form action="#[[to_url('/thread', {user=session.logged.id, id=thread.id})]]" method="post">
         |       <link rel="stylesheet" href="/static/css/forum.css">
         |       <div class="tp">
         |           <button onclick="put('quote'); return false;">quote</button>
@@ -102,7 +102,6 @@
         |       <br>
         |       <input type="submit" style="width: 100%" value="Add post" class="nice-button no-margin" name="submit">
         |       <input type="hidden" name="id" value="#[[thread.id]]">
-        |       <input type="hidden" name="csrf" value="#[[to_url('/thread', {id=thread.id, user=session.logged.id})]]">
         |   </form>
         end
     end

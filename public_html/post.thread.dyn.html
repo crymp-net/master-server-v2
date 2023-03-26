@@ -1,0 +1,22 @@
+<?include shared.priv.html ?><?lu
+    local referer = headers["referer"] or "/forum"
+    if session.logged and query.e and query.e.id and tonumber(query.e.user) == session.logged.id then
+        local params = aio:parse_query(body)
+        if params.submit and params.text and #params.text > 0 then
+            local text = params.text:gsub("^%s+", ""):gsub("%s+$", "")
+            if #text > 0 then
+                local postId = await(crymp.web:addForumThreadPost(session.logged, tonumber(query.e.id), text))
+                if postId then
+                    referer = aio:to_url("/thread", {id=query.e.id, page="last", e=false}, "p" .. postId)
+                else
+                    status("500 Internal server error")
+                    | Failed to write to database
+                    return
+                end
+            end
+        end
+    end
+    status("302 Temporary redirect")
+    header("location", referer)
+    return
+?>

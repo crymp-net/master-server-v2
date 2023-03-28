@@ -1,0 +1,5 @@
+<?lu
+    header("content-type", "application/json")
+    local ip, port = aio:get_ip(fd, headers)
+    write({ ip = ip })
+?>

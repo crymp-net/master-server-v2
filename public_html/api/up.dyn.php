@@ -1,5 +1,6 @@
 <?lu
     local ip, rPort = aio:get_ip(fd, headers)
+    if not query.port then query = aio:parse_query(body) end
     local update = crymp.api:toServerUpdate(query, ip, query.port)
     if update then
         local cookie = await(crymp.api:upsertServer(update))

@@ -14,6 +14,36 @@ if not sql then
     end)
 end
 
+--- @class server_object
+--- @field ip string
+--- @field port integer
+--- @field behindProxy boolean
+--- @field source string
+--- @field localIp string
+--- @field publicPort integer
+--- @field gamespyPort integer
+--- @field name string
+--- @field description string
+--- @field pak string
+--- @field map string
+--- @field mapName string
+--- @field mapDownloadLink string
+--- @field players string
+--- @field gamespyPlayers string|nil
+--- @field password string
+--- @field ranked boolean
+--- @field numPlayers integer
+--- @field maxPlayers integer
+--- @field gameVersion integer
+--- @field timeLeft integer
+--- @field dx10 boolean
+--- @field voiceChat boolean
+--- @field antiCheat boolean
+--- @field dedicated boolean
+--- @field rating number|nil
+--- @field gamepadsOnly boolean
+--- @field friendlyFire boolean
+
 --- @type ormrepo
 local servers = orm:create(sql, {
     source = "server",

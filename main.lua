@@ -16,25 +16,16 @@ Categories = db.categories
 
 local USER_SALT = os.getenv("USER_SALT") or "user-salt"
 
-function hex(bytes)
-    --- @type string[]|integer[]
-    local result = {bytes:byte(1, #bytes)}
-    for i=1,#result do
-        result[i] = string.format("%02x", result[i])
-    end
-    return table.concat(result)
-end
-
 function isodate(time)
     return os.date("!%Y-%m-%dT%T", time)
 end
 
 function hash(text)
-    return hex(crypto.sha256(text))
+    return codec.hex_encode(crypto.sha256(text))
 end
 
 function hash_sha1(text)
-    return hex(crypto.sha1(text))
+    return codec.hex_encode(crypto.sha1(text))
 end
 
 function hash_password(text)

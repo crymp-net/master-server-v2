@@ -3,40 +3,11 @@ local db = require("crymp.db")
 --- @class web_api
 local api = {}
 
---- @class server_update
---- @field ip string
---- @field port integer
---- @field behindProxy boolean
---- @field numPlChanged boolean
---- @field source string
---- @field localIp string
---- @field publicPort integer
---- @field gamespyPort integer
---- @field name string
---- @field description string
---- @field pak string
---- @field map string
---- @field mapName string
---- @field mapDownloadLink string
---- @field players string
---- @field password string
---- @field ranked boolean
---- @field numPlayers integer
---- @field maxPlayers integer
---- @field gameVersion integer
---- @field timeLeft integer
---- @field dx10 boolean
---- @field voiceChat boolean
---- @field antiCheat boolean
---- @field dedicated boolean
---- @field gamepadsOnly boolean
---- @field friendlyFire boolean
-
 --- Convert query parameters to server update
 ---@param query any
 ---@param ip string
 ---@param port integer|nil
----@return server_update|nil update
+---@return server_object|nil update
 function api:toServerUpdate(query, ip, port)
     port = port or 64087
     local ok = true
@@ -78,8 +49,55 @@ function api:toServerUpdate(query, ip, port)
     return obj
 end
 
+--- To public server entity
+---@param server server_object
+function api:toPublic(server)
+    server = server or self
+    local players = crymp:exportPlayers(server.players)
+    local map = (server.map or "multiplayer/ps/mesa"):lower()
+    local mapName = server.mapName or (map:sub(16))
+
+    return {
+        ip = server.ip,
+        port = server.gamespyPort or server.port,
+        gamespy_port = server.gamespyPort,
+        public_ip = server.ip,
+        public_port = server.publicPort,
+        local_ip = server.localIp,
+        local_port = server.port,
+        
+        name = server.name,
+        desc = server.description,
+        pak = server.pak,
+        map = map,
+        mapnm = mapName,
+        mapdnm = mapName,
+        mapdl = server.mapDownloadLink,
+
+        players = players,
+        pass = (server.password and #server.password > 0 and server.password ~= "0") and "1" or "0",
+
+        ranked = server.ranked and 1 or 0,
+        trusted = 0,
+
+        numpl = server.numPlayers,
+        maxpl = server.maxPlayers,
+        ver = server.gameVersion or 6156,
+        ntimel = server.timeLeft,
+        timel = crymp:formatTime(server.timeLeft),
+
+        dx10 = server.dx10,
+        voicecomm = server.voiceChat,
+        anticheat = server.antiCheat,
+        dedicated = server.dedicated,
+        gamepadsonly = server.gamepadsOnly,
+        friendlyfire = server.friendlyFire,
+        rating = server.rating
+    }
+end
+
 --- Insert or update a server
----@param params server_update
+---@param params server_object
 ---@return aiopromise<string|nil>
 function api:upsertServer(params)
     local resolve, resolver = aio:prepare_promise()
@@ -110,7 +128,7 @@ function api:upsertServer(params)
                 params.ratingUpdates = 0
                 params.rating = 0
                 params.peopleTime = params.numPlayers > 0 and params.activeTime or 0
-                params.cookie = hex(crypto.random(16))
+                params.cookie = codec.hex_encode(crypto.random(16))
                 db.servers:insert(params)(function (result)
                     if not result or result.error then
                         print(result.error)

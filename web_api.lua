@@ -3,6 +3,18 @@ local db = require("crymp.db")
 --- @class web_api
 local api = {}
 
+local standard_maps = {
+    ["multiplayer/ps/shore"] = true,
+    ["multiplayer/ps/mesa"] = true,
+    ["multiplayer/ps/plantation"] = true,
+    ["multiplayer/ps/beach"] = true,
+    ["multiplayer/ps/refinery"] = true,
+    ["multiplayer/ia/steelmill"] = true,
+    ["multiplayer/ia/quarry"] = true,
+    ["multiplayer/ia/armada"] = true,
+    ["multiplayer/ia/outpost"] = true
+}
+
 --- Convert query parameters to server update
 ---@param query any
 ---@param ip string
@@ -96,7 +108,7 @@ function api.toPublic(server, own_ip)
         map = map,
         mapnm = mapName,
         mapdnm = mapName,
-        mapdl = server.mapDownloadLink,
+        mapdl = (server.mapDownloadLink and #server.mapDownloadLink > 0) and "http://" .. server.mapDownloadLink:gsub("^http://", "") or "",
 
         players = players,
         pass = (server.password and #server.password > 0 and server.password ~= "0") and "1" or "0",
@@ -138,6 +150,10 @@ function api:upsertMap(params)
     if url and #url > 0 then
         url = url:gsub("^https?://", "")
         credible = url:find("nullptr.one/", 1, nil) ~= nil
+    end
+    if standard_maps[mapName] then
+        resolve("")
+        return resolver
     end
     local mapFuture = db.maps.one:byMapNameVersion(mapName, version)
     mapFuture(function (result, error)
@@ -182,7 +198,7 @@ function api:upsertServer(params)
             print("get error: ", existingServer.error)
             resolve(nil)
         else
-            params.mapDownloadLink = existingMap    
+            params.mapDownloadLink = existingMap
             if existingServer then
                 local playersBefore = existingServer.players
                 db.servers:update({ip=params.ip, port=params.port}, params)(function (result)

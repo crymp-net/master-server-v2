@@ -1,5 +1,16 @@
 <?lu
-    header("content-type", "application/json; charset=utf-8")
+    local encode = locals.encode or codec.json_encode
+    if encode == codec.json_encode then
+        header("content-type", "application/json; charset=utf-8")
+    else
+        header("content-type", "text/lua; charset=utf-8")
+    end
+    local ip = aio:get_ip(fd)
     local servers = await(crymp:getServers())
-    write(aio:map(servers, crymp.api.toPublic))
+    if not servers then
+        status("500 Internal server error")
+        write(encode({error="server error"}))
+    else
+        write(encode(aio:map(servers, crymp.api.toPublic, ip)))
+    end
 ?>

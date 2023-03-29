@@ -101,14 +101,19 @@ function crymp:getActivePlayers()
     return on_resolved
 end
 
+--- Convert @name%rank,kills,deaths,pid%team ... string to objects
+---@param text any
+---@return {name: string, rank: number, kills: number, deaths: number, profile_id: number, team: number|nil}[] players
 function crymp:exportPlayers(text)
     local players = {}
+    text = text or ""
     for player in text:gmatch("%@([^@]+)") do
         local name, rank, kills, deaths, pid = player:match("(.-)%%(%d+)%%(%d+)%%(%d+)%%(.+)")
         if name and rank and kills and deaths and pid then
-            local team = "0"
+            local team =nil
             if pid:find("%%") then
                 pid, team = pid:match("(%d+)%%(%d+)")
+                team = tonumber(team)
             end
             table.insert(players, {
                 name = name,
@@ -116,7 +121,7 @@ function crymp:exportPlayers(text)
                 kills = tonumber(kills),
                 deaths = tonumber(deaths),
                 profile_id = tonumber(pid),
-                team = tonumber(team)
+                team = team
             }) 
         end
     end

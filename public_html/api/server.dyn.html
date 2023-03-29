@@ -1,0 +1,21 @@
+<?lu
+    local encode = locals.encode or codec.json_encode
+    if encode == codec.json_encode then
+        header("content-type", "application/json; charset=utf-8")
+    else
+        header("content-type", "text/lua; charset=utf-8")
+    end
+    if query.ip and query.port then
+        local server = await(crymp:getServer(query.ip, query.port))
+        if not server then
+            status("404 Not found")
+            write(encode({error = "not available"}))
+        else
+            local ip = aio:get_ip(fd)
+            write(encode(crymp.api.toPublic(server, ip)))
+        end
+    else
+        status("400 Bad request")
+        write(encode({error = "missing params: ip, port"}))
+    end
+?>

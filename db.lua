@@ -89,7 +89,9 @@ local servers = orm:create(sql, {
     },
     findByIpPort = true,
     findByIsReal = true,
-    findBy = true
+    findBy = true,
+    findByActive = "SELECT * FROM server WHERE last_updated > '%s' AND is_real = '\\1'",
+    findByOnline = "SELECT SUM(num_players) AS total_players FROM server WHERE last_updated > '%s' AND is_real = '\\1'"
 })
 
 local users = orm:create(sql, {

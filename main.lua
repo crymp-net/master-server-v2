@@ -1,5 +1,6 @@
 local db = require("crymp.db")
 local aio = require("aio.aio")
+local orm = require("server.orm")
 local web_ui = loadfile("crymp/web_ui.lua")()
 local web_api = loadfile("crymp/web_api.lua")()
 
@@ -55,9 +56,14 @@ function signed(text, salt)
     return nil
 end
 
+function crymp:getBorder()
+    return orm.t.datetime.toformat(os.time() - 86400 * 365)
+end
+
 function crymp:getServers()
     return aio:cached("servers", "all", function()
-        return Servers.all:by({orderBy="num_players DESC, rating DESC"})
+        local border = self:getBorder()
+        return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
     end)
 end
 
@@ -91,11 +97,11 @@ end
 
 function crymp:getActivePlayers()
     local resolve, on_resolved = aio:prepare_promise()
-    db.sql:select("SELECT SUM(num_players) as activePlayers FROM server")(function (rows, errorOrColumns)
-        if not rows then
+    Servers.one:byOnline(self:getBorder())(function (result, err)
+        if not result then
             resolve(0)
         else
-            resolve(tonumber(rows[1].activePlayers))
+            resolve(tonumber(result.total_players))
         end
     end)
     return on_resolved

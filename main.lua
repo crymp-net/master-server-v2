@@ -15,7 +15,10 @@ Threads = db.threads
 Subcategories = db.subcategories
 Categories = db.categories
 
-local USER_SALT = os.getenv("USER_SALT") or "user-salt"
+USER_SALT = os.getenv("USER_SALT") or "user-salt"
+SECURE_LOGIN_SALT = os.getenv("SECURE_LOGIN_SALT") or "secure-login-salt"
+TOKEN_SALT = os.getenv("TOKEN_SALT") or "token-salt"
+STATIC_ID_SALT = os.getenv("STATIC_ID_SALT") or "static-id-salt"
 
 function isodate(time)
     return os.date("!%Y-%m-%dT%T", time)
@@ -31,6 +34,10 @@ end
 
 function hash_password(text)
     return hash(hash_sha1(text) .. USER_SALT);
+end
+
+function hash_secu_login(email, hashed_password)
+    return hash_sha1(hashed_password .. "_" .. email .. SECURE_LOGIN_SALT)
 end
 
 function keys(dict)
@@ -92,13 +99,15 @@ function crymp:getUser(params)
         return Users.one:byId(params.id)
     elseif params.email then
         return Users.one:byEmail(params.email)
+    elseif params.nick then
+        return Users.one:byNick(params.nick)
     end
 end
 
 function crymp:getActivePlayers()
     local resolve, on_resolved = aio:prepare_promise()
-    Servers.one:byOnline(self:getBorder())(function (result, err)
-        if not result then
+    Servers.one:byOnline(self:getBorder())(function (result)
+        if not result or iserror(result) then
             resolve(0)
         else
             resolve(tonumber(result.total_players))

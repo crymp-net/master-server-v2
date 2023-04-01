@@ -12,7 +12,7 @@ function web:getForum(rights)
     local now = os.time()
     local month = 90 * 86400
     aio:gather(categoriesFuture, subcategoriesFuture, threadsFuture)(function (categories, subcategories, threads)
-        if categories == nil or subcategories == nil or threads == nil then
+        if not ispresent(categories, subcategories, threads) then
             return resolve({})
         else
             local perCategory = {}
@@ -40,15 +40,15 @@ function web:getForum(rights)
                 end
             end
 
-            db.posts.all:findAuthorByIdIn(postIds)(function (result, error)
-                if result then
+            db.posts.all:findAuthorByIdIn(postIds)(function (result)
+                if result and ispresent(result) then
                     local postAuthors = {}
                     for _, post in ipairs(result) do
                         userIds[post.author] = true
                         postAuthors[post.id] = post.author
                     end
-                    db.users.all:byIdIn(keys(userIds))(function(result, error)
-                        if not result then
+                    db.users.all:byIdIn(keys(userIds))(function(result)
+                        if not result or not ispresent(result) then
                             return resolve({})
                         end
                         local forum = {}
@@ -91,7 +91,7 @@ function web:getForumThread(id, rights, page, perPage)
     local threadFuture = db.threads.one:byId(id)
     local postsFuture = db.posts.all:byThread(id)
     aio:gather(threadFuture, postsFuture)(function (thread, posts)
-        if thread and posts then
+        if ispresent(thread) and ispresent(posts) then
             local pages = math.floor((#posts - 1) / perPage)
             if page < 0 then
                 page = pages + page + 1
@@ -117,7 +117,7 @@ function web:getForumThread(id, rights, page, perPage)
             local usersFuture = db.users.all:byIdIn(keys(userIds))
             local subcategoryFuture = db.subcategories.one:byId(thread.subc)
             aio:gather(usersFuture, subcategoryFuture)(function (users, subcategory)
-                if not subcategory or subcategory.rights > rights then
+                if not ispresent(subcategory, users) or subcategory.rights > rights then
                     return resolve(nil)
                 end
                 local byId = {}
@@ -158,7 +158,7 @@ function web:addForumThreadPost(user, thread_id, text)
         likeCount = 0,
         invisible = 0
     })(function (result)
-        if result.error then
+        if iserror(result) then
             resolve(nil)
         else
             local postId = result.last_insert_id

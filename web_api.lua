@@ -156,8 +156,8 @@ function api:upsertMap(params)
         return resolver
     end
     local mapFuture = db.maps.one:byMapNameVersion(mapName, version)
-    mapFuture(function (result, error)
-        if error then
+    mapFuture(function (result)
+        if result and result.error then
             resolve(url)
         else
             if #url == 0 then url = nil end
@@ -224,7 +224,7 @@ function api:upsertServer(params)
                 params.peopleTime = params.numPlayers > 0 and params.activeTime or 0
                 params.cookie = codec.hex_encode(crypto.random(16))
                 db.servers:insert(params)(function (result)
-                    if not result or result.error then
+                    if result.error then
                         print("insert error: ", result.error)
                         resolve(nil)
                     else
@@ -235,6 +235,72 @@ function api:upsertServer(params)
         end
     end)
     return resolver
+end
+
+function api:issueToken(profileId, time, nickname, name)
+    name = name or "Nomad"
+    nickname = nickname or "Nomad"
+    profileId = tostring(profileId)
+    time = tostring(time)
+    local signing = profileId .. "_" .. time
+
+    return {
+        id = profileId,
+        token = hash(signing .. TOKEN_SALT) .. "_" .. time,
+        nickname = nickname,
+        name = name
+    }
+end
+
+function api:validateToken(profileId, token)
+    local signature, time = token:match("(.-)_(%d+)")
+    local validityPeriod = 3600 * 4
+    if signature and time then
+        local now = os.time()
+        local time_then = tonumber(time)
+        local diff = now - time_then
+        if diff > validityPeriod then
+            return false
+        end
+        return self:issueToken(profileId, time, "Nomad", "Nomad").token == token
+    else
+        if #token == 65 and tonumber(profileId) >= 1000000 and token:sub(1, 1) == "s" then
+            local tok = token:sub(2):lower()
+            local base = self:staticIDToken(tostring(profileId))
+            return hash("S" .. base .. "ID") == tok
+        else
+            return false
+        end
+    end
+end
+
+function api:login(user, password)
+    local resolve, resolver = aio:prepare_promise()
+    local isEmail = user:match("(.-)@(.+)%.(.*)")
+    local userFuture = nil
+    if isEmail then
+        userFuture = db.users.one:byEmail(user)
+    else
+        userFuture = db.users.one:byNick(user)
+    end
+    userFuture(function (user)
+        if not user or iserror(user) then
+            resolve(nil)
+        else
+            if hash_password(password) == user.password then
+                resolve(self:issueToken(user.id, os.time(), user.nick, user.display))
+            elseif password == hash_secu_login(user.email, user.password) then
+                resolve(self:issueToken(user.id, os.time(), user.nick, user.display))
+            else
+                resolve(nil)
+            end
+        end
+    end)
+    return resolver
+end
+
+function api:staticIDToken(profileId)
+    return hash(profileId .. "_" .. STATIC_ID_SALT)
 end
 
 return api

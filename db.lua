@@ -4,7 +4,7 @@ local orm = require("server.orm")
 --- @type mysql
 local sql = CRYMP_SQL
 if not sql then
-    CRYMP_SQL = mysql:new()
+    CRYMP_SQL = mysql:new_pool(1)
     sql = CRYMP_SQL
     local user, password, db = os.getenv("DB_USER") or "80s", os.getenv("DB_PASSWORD") or "password", os.getenv("DB_NAME") or "nsfw"
     sql:connect(user, password, db)(function (ok, err)

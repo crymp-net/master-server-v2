@@ -186,12 +186,13 @@ function api:upsertMap(params)
 end
 
 --- Insert or update a server
----@param params server_object
+---@param params server_object server update
 ---@return aiopromise<string|nil>
-function api:upsertServer(params)
+function api:upsertServer(params, source)
     local resolve, resolver = aio:prepare_promise()
     local serverFuture = db.servers.one:byIpPort(params.ip, params.port)
     local mapFuture = self:upsertMap(params)
+    params.source = source or "http"
 
     aio:gather(serverFuture, mapFuture)(function (existingServer, existingMap)
         if existingServer and existingServer.error then
@@ -237,6 +238,12 @@ function api:upsertServer(params)
     return resolver
 end
 
+--- Issue temporary token for given profile ID at given time
+---@param profileId string|number profile ID
+---@param time string|number time when token was issued
+---@param nickname string player nickname
+---@param name string player display name
+---@return table
 function api:issueToken(profileId, time, nickname, name)
     name = name or "Nomad"
     nickname = nickname or "Nomad"
@@ -252,6 +259,10 @@ function api:issueToken(profileId, time, nickname, name)
     }
 end
 
+--- Validate token provided by user to the game server
+---@param profileId string player profile ID
+---@param token string provided token
+---@return boolean ok true if token is ok
 function api:validateToken(profileId, token)
     local signature, time = token:match("(.-)_(%d+)")
     local validityPeriod = 3600 * 4
@@ -274,6 +285,10 @@ function api:validateToken(profileId, token)
     end
 end
 
+--- Perform user login on API endpoints
+---@param user string nickname or email or ::tr:staticID
+---@param password string password secured password or token for staticID
+---@return aiopromise<table> ok
 function api:login(user, password)
     local resolve, resolver = aio:prepare_promise()
     local isEmail = user:match("(.-)@(.+)%.(.*)")
@@ -310,10 +325,19 @@ function api:login(user, password)
     return resolver
 end
 
+--- Get signed token for static ID
+---@param profileId string|number
+---@return string signed token
 function api:staticIDToken(profileId)
-    return hash(profileId .. "_" .. STATIC_ID_SALT)
+    return codec.hex_encode(crypto.sha1(crypto.hmac_sha256(tostring(profileId), STATIC_ID_SALT)))
 end
 
+--- Get or create static ID
+---@param hardwareId string
+---@param locale string
+---@param tz number
+---@param clientVer string
+---@return aiopromise<table>
 function api:getStaticID(hardwareId, locale, tz, clientVer)
     local resolve, resolver = aio:prepare_promise()
     db.staticIds.one:byHwid(hardwareId)(function (result)

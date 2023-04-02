@@ -187,8 +187,25 @@ local maps = orm:create(sql, {
         creatorName = {field = "creator_name", type=orm.t.varchar(255)},
         url = {field = "url", type=orm.t.varchar(255)}
     },
-
     findByMapNameVersion = true
+})
+
+local staticIds = orm:create(sql, {
+    source = "id_service",
+    index = {"id"},
+    --- @type ormentity
+    entity = {
+        id = { field = "id", type=orm.t.int },
+        createdAt = {field = "created", type=orm.t.datetime },
+        ip = { field = "ip", type=orm.t.varchar(20) },
+        clientVersion = { field = "ver", type=orm.t.varchar(10) },
+        hwid = { field = "hwid", type=orm.t.varchar(96)},
+        locale = { field = "lng", type=orm.t.text },
+        launches = { field = "launches", type=orm.t.int },
+        tz = { field = "tz", type=orm.t.double },
+        lastLaunch = {field = "last_launch", type = orm.t.datetime}
+    },
+    findByHwid = true
 })
 
 return {
@@ -199,5 +216,6 @@ return {
     threads = threads,
     subcategories = subcategories,
     categories = categories,
-    maps = maps
+    maps = maps,
+    staticIds = staticIds
 }

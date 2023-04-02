@@ -20,7 +20,7 @@
             header("Conten-type", "application/json; charset=utf-8")
             return locals.encode(result)
         end
-        if not result then return "FAIL" end
+        if iserror(result) then return "FAIL" end
         return result.id .. "," .. result.token .. "," .. result.name
     end
 

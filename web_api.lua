@@ -283,6 +283,17 @@ function api:login(user, password)
     else
         userFuture = db.users.one:byNick(user)
     end
+    -- if static ID is used
+    if user:match("^::tr:") then
+        local profileId = user:sub(6)
+        local staticIdSign = self:staticIDToken(profileId)
+        if password == staticIdSign then
+            resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad"))
+        else
+            resolve(nil)
+        end
+        return resolver
+    end
     userFuture(function (user)
         if not user or iserror(user) then
             resolve(nil)
@@ -301,6 +312,44 @@ end
 
 function api:staticIDToken(profileId)
     return hash(profileId .. "_" .. STATIC_ID_SALT)
+end
+
+function api:getStaticID(hardwareId, locale, tz, clientVer)
+    local resolve, resolver = aio:prepare_promise()
+    db.staticIds.one:byHwid(hardwareId)(function (result)
+        if iserror(result) then
+            resolve(nil)
+        elseif result ~= nil then
+            local profileId = tostring(result.id + 1000000)
+            db.staticIds:update({id = result.id}, {
+                lastLaunch = os.time(),
+                launches = result.launches + 1,
+                locale = locale or result.locale or "en-US",
+                tz = tz or result.tz or 0,
+                clientVersion = clientVer,
+            })(function (result)
+                resolve({id = profileId, token=self:staticIDToken(profileId)})
+            end)
+        else
+            db.staticIds:insert({
+                hwid = hardwareId,
+                createdAt = os.time(),
+                ip = "-",
+                clientVersion = clientVer or "18",
+                locale = locale or "en-US",
+                tz = tz or 0,
+                lastLaunch = os.time()
+            })(function (result)
+                if iserror(result) then
+                    resolve(nil)
+                else
+                    local profileId = tostring(result.last_insert_id + 1000000)
+                    resolve({id = profileId, token=self:staticIDToken(profileId)})
+                end
+            end)
+        end
+    end)
+    return resolver
 end
 
 return api

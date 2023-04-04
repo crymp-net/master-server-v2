@@ -419,6 +419,10 @@ function api:updateReleaseByCommit(release_type, commit, dest)
     return resolver
 end
 
+--- Get release by commit or if commit is "latest", get latest release
+---@param release_type string release type
+---@param commit string commit hash
+---@return fun(on_resolved: fun(any)|thread)
 function api:getReleaseByCommit(release_type, commit)
     release_type = release_type or "release"
     local resolve, resolver = aio:prepare_promise()
@@ -457,6 +461,9 @@ function api:getReleaseByCommit(release_type, commit)
     return resolver
 end
 
+--- Update current release based on GitHub API
+--- Fetches information about latest release and corresponding ZIP files
+---@return fun(on_resolved: fun(any)|thread)
 function api:updateReleases()
     local resolve, resolver = aio:prepare_promise()
     aio:popen_read(ELFD, "curl", "--silent", "https://api.github.com/repositories/213009308/releases")(function (contents)

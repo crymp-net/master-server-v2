@@ -376,4 +376,119 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
     return resolver
 end
 
+--- Update info about release in database
+---@param release_type string release type, release or dev
+---@param commit string commit hash
+---@param dest string destination
+---@return fun(on_resolved: fun(result)|thread)
+function api:updateReleaseByCommit(release_type, commit, dest)
+    local resolve, resolver = aio:prepare_promise()
+    db.releases.one:byReleaseTypeCommit(release_type, commit)(function (result)
+        if iserror(result) then
+            return resolve(result)
+        else
+            local entry = {
+                releaseType = release_type,
+                commit = commit,
+                lastUpdated = os.date("*t"),
+                hash32 = hash_file(dest .. "/CryMP-Client32.exe"),
+                hash64 = hash_file(dest .. "/CryMP-Client64.exe")
+            }
+            if not entry.hash32 or not entry.hash64 then
+                return resolve({error = "failed to compute file hash"})
+            end
+            if not result then
+                db.releases:insert(entry)(function (result)
+                    if iserror(result) then
+                        resolve(result)
+                    else
+                        self:getReleaseByCommit(release_type, commit)(resolve)
+                    end
+                end)
+            else
+                db.releases:update({releaseType = release_type, commit = commit}, entry)(function (result)
+                    if iserror(result) then
+                        resolve(result)
+                    else
+                        self:getReleaseByCommit(release_type, commit)(resolve)
+                    end
+                end)
+            end
+        end
+    end)
+    return resolver
+end
+
+function api:getReleaseByCommit(release_type, commit)
+    release_type = release_type or "release"
+    local resolve, resolver = aio:prepare_promise()
+    local future = nil
+    if commit ~= "latest" then
+        future = db.releases.one:byReleaseTypeCommit(release_type, commit)
+    else
+        future = db.releases.one:byReleaseType(release_type, {orderBy = "updated_at DESC"})
+    end
+    future(function (result)
+        if not result then
+            resolve({error = "no release found"})
+        elseif iserror(result) then
+            resolve({error = "database error"})
+        else
+            resolve({
+                files = {
+                    {
+                        type = "exe",
+                        arch = 32,
+                        hash = result.hash32,
+                        path = "CryMP-Client32.exe",
+                        url = "https://crymp.nullptr.one/static/releases/" .. result.commit .. "/CryMP-Client32.exe"
+                    },
+                    {
+                        type = "exe",
+                        arch = 64,
+                        hash = result.hash64,
+                        path = "CryMP-Client64.exe",
+                        url = "https://crymp.nullptr.one/static/releases/" .. result.commit .. "/CryMP-Client64.exe"
+                    }
+                }
+            })
+        end
+    end)
+    return resolver
+end
+
+function api:updateReleases()
+    local resolve, resolver = aio:prepare_promise()
+    aio:popen_read(ELFD, "curl", "--silent", "https://api.github.com/repositories/213009308/releases")(function (contents)
+        if not contents then
+            return resolve(make_error("failed to download releases from GitHub"))
+        end
+        local releases = codec.json_decode(contents)
+        if releases == nil or #releases < 1 or #releases[1].assets < 1 then
+            return resolve(make_error("failed to parse releases from GitHub"))
+        end
+        local commit = releases[1].target_commitish
+        local asset = releases[1].assets[1]
+        local target_file = "/tmp/sfwcl_" .. commit .. ".zip"
+        local dest = "crymp/public_html/static/releases/" .. commit
+        local f, _ = io.open(dest .. "/CryMP-Client64.exe", "rb")
+        if f then
+            f:close()
+            self:getReleaseByCommit("release", commit)(resolve)
+        end
+        aio:popen_read(ELFD, "curl", "--silent", "-L", asset.browser_download_url, "--output", target_file)(function (contents)
+            if contents == nil then
+                return resolve(make_error("failed to download Zip from GitHub"))
+            end
+            aio:popen_read(ELFD, "unzip", target_file, "-d", dest)(function (contents)
+                if not contents or not contents:find("inflating") then
+                    return resolve({error = "failed to inflate zip"})
+                end
+                self:updateReleaseByCommit("release", commit, dest)(resolve)
+            end)
+        end)
+    end)
+    return resolver
+end
+
 return api

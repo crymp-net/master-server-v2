@@ -208,6 +208,22 @@ local staticIds = orm:create(sql, {
     findByHwid = true
 })
 
+local releases = orm:create(sql, {
+    source = "releases",
+    index = {"release_type"},
+    -- create table releases(release_type varchar(20) primary key unique, commit_hash varchar(64), updated_at datetime default current_timestamp(), hash_32 varchar(64), hash_64 varchar(64));
+    --- @type ormentity
+    entity = {
+        releaseType = { field = "release_type", type=orm.t.varchar(20) },
+        commit = { field = "commit_hash", type=orm.t.varchar(64) },
+        lastUpdated = { field = "updated_at", type=orm.t.datetime },
+        hash32 = { field = "hash_32", type = orm.t.varchar(64) },
+        hash64 = { field = "hash_64", type = orm.t.varchar(64) },
+    },
+    findByReleaseTypeCommit = true,
+    findByReleaseType = true
+})
+
 return {
     sql = sql,
     servers = servers,
@@ -217,5 +233,6 @@ return {
     subcategories = subcategories,
     categories = categories,
     maps = maps,
-    staticIds = staticIds
+    staticIds = staticIds,
+    releases = releases
 }

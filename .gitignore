@@ -5,3 +5,4 @@
 *.local.txt
 private/
 local/
+public_html/static/releases/

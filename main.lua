@@ -28,6 +28,14 @@ function hash(text)
     return codec.hex_encode(crypto.sha256(text))
 end
 
+function hash_file(file)
+    local f, _ = io.open(file, "rb")
+    if not f then return nil end
+    local contents = f:read("*all")
+    f:close()
+    return hash(contents)
+end
+
 function hash_sha1(text)
     return codec.hex_encode(crypto.sha1(text))
 end

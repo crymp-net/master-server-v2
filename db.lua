@@ -211,7 +211,16 @@ local staticIds = orm:create(sql, {
 local releases = orm:create(sql, {
     source = "releases",
     index = {"release_type"},
-    -- create table releases(release_type varchar(20) primary key unique, commit_hash varchar(64), updated_at datetime default current_timestamp(), hash_32 varchar(64), hash_64 varchar(64));
+    --[[
+        create table releases(
+            release_type varchar(20),
+            commit_hash varchar(64),
+            updated_at datetime default current_timestamp,
+            hash_32 varchar(64),
+            hash_64 varchar(64),
+            primary key (release_type, commit_hash)
+        );
+    ]]
     --- @type ormentity
     entity = {
         releaseType = { field = "release_type", type=orm.t.varchar(20) },

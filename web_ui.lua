@@ -123,7 +123,11 @@ function web:getForumThread(id, rights, page, perPage)
                 local byId = {}
                 if users then
                     for _, user in ipairs(users) do
-                        if not user.picture or #user.picture <= 1 then user.picture = "/static/images/face.png" end
+                        if not user.picture or #user.picture <= 1 then 
+                            user.picture = "/static/images/face.png"
+                        else
+                            user.picture = user.picture:gsub("%.%./static/", "/static/ucg/profile/")
+                        end
                         byId[user.id] = user
                     end
                 end

@@ -1,1 +1,1 @@
-<?lu locals.encode = codec.lua_encode ?>function inforet() return <?include ./server.dyn.html ?> end
+<?lu locals.encode = codec.lua_encode ?>function inforet() return <?include server.html ?> end

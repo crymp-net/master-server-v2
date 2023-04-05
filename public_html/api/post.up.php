@@ -1,1 +1,1 @@
-<?include up.dyn.php ?>
+<?include up.php ?>

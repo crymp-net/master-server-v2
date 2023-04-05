@@ -126,7 +126,7 @@ function web:getForumThread(id, rights, page, perPage)
                         if not user.picture or #user.picture <= 1 then 
                             user.picture = "/static/images/face.png"
                         else
-                            user.picture = user.picture:gsub("%.%./static/", "/static/ucg/profile/")
+                            user.picture = user.picture:gsub("%.?%.?/?static/", "/static/ucg/profile/")
                         end
                         byId[user.id] = user
                     end

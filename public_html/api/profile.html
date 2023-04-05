@@ -1,0 +1,32 @@
+<?lu
+    local handle, pass = query.a, query.b
+    header("content-type", "text/xml")
+    if not handle or not pass or #handle == 0 or #pass == 0 then
+        | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
+    else
+        local auth = await(crymp.api:login(handle, pass))
+        if not auth or iserror(auth) then
+            | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
+        else
+            local user = await(crymp:getUser{id = tonumber(auth.id)})
+            if not user or iserror(user) then
+                | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
+                return
+            end
+            local stats = {kills=0, deaths=0,playedTime=0}
+            local token = hash_secu_login(user.email, user.password)
+            ```
+            <AccountInfo>
+                <kills>#[[stats.kills]]</kills>
+                <deaths>#[[stats.deaths]]</deaths>
+                <playedTime>#[[stats.playedTime]]</playedTime>
+                <profileId>#[[user.id]]</profileId>
+                <master>crymp.net</master>
+                <display>#[[user.display]]</display>
+                <handle>#[[user.nick]]</handle>
+                <token>#[[token]]</token>
+            </AccountInfo>
+            ```
+        end
+    end
+?>

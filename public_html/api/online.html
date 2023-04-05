@@ -1,0 +1,5 @@
+<OnlineStatus><online><?lu 
+    header("content-type", "application/xml");
+    local online = await(crymp:getActivePlayers()); 
+    | #[[online]]
+?></online></OnlineStatus>

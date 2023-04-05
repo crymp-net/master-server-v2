@@ -19,6 +19,7 @@ USER_SALT = os.getenv("USER_SALT") or "user-salt"
 SECURE_LOGIN_SALT = os.getenv("SECURE_LOGIN_SALT") or "secure-login-salt"
 TOKEN_SALT = os.getenv("TOKEN_SALT") or "token-salt"
 STATIC_ID_SALT = os.getenv("STATIC_ID_SALT") or "static-id-salt"
+RELEASE_SALT = os.getenv("RELEASE_SALT") or "release-salt"
 
 function isodate(time)
     return os.date("!%Y-%m-%dT%T", time)

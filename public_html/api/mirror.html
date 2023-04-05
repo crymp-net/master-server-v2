@@ -1,5 +1,5 @@
 <?lu
-    header("content-type", "application/xml")
+    header("content-type", "text/xml")
     local ctx = query.context or "release"
     local release = await(crymp.api:getReleaseByCommit(ctx, "latest"))
     if not release or iserror(release) and release.error == "no release found" then
@@ -12,7 +12,7 @@
     if not release or iserror(release) then
         status("500 Internal server error")
         release = release or {error = "unknown error"}
-        | <Error><error>failed to get release: #[[release.error]]</error></Error>
+        | <ErrorMessage><error>failed to get release: #[[release.error]]</error></ErrorMessage>
     else
         | <MirrorResponse><files>
         for _, f in ipairs(release.files) do

@@ -1,0 +1,66 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+    <h1>Crysis Multiplayer Patch - Frequently Asked Questions</h1>
+    <div class="thread">
+        <div class="post">
+            <h3>How do I download and install the client?</h3>
+            <div class="answ">
+                <a target="_blank" href="/static/client/launcher.exe" rel="nofollow">Download the client here</a>
+            </div>
+        </div>
+        <div class="post">
+            <h3>When I launch the client, Install button is gray</h3>
+            <div class="answ">
+                <div>To install the client, you need to have the game installed in first place as the client doesn't provide game binaries.</div>
+                <div>If the button is still gray, you might have installed your game in different than usual folder. In that case, please click the URL input field and locate the folder where your game is installed (folder that contains Game/, Bin32/ or Bin64/ folders).</div>
+            </div>
+        </div>
+        <div class="post">
+            <h3>When I open internet game, I see GameSpy login screen</h3>
+            <div class="answ">
+                <div>First of all, <b>check whether you are running correct game version</b>, you can do so by looking into bottom right corner, there should be some number like 1.1.5767 or 1.1.6115 or 1.1.6156. <b>The required version to use CryMP client is 6156</b>. </div>
+                <div>If your game version is 6156 and you still see GameSpy log-in screen, <b>make sure you are launching the game using shortcut generated on the Desktop by installer</b>. </div>
+                <div>If you don't have any shortcuts on your Desktop, just run installer once again or launch the game with -mod sfwcl argument</div>
+            </div>
+        </div>
+        <div class="post">
+            <h3>I can't see my server on the website!</h3>
+            <div class="answ">
+                <div>First of all, make sure you are using some SSM, either SafeWriting or CryFire or even if you don't use any, make sure you modify your CryNetwork.dll and replace all occurences of "gamespy.com" with "m.crymp.net"</div>
+                <div>If now, you don't see your server on website, but can see it inside in-game server list, that means your server is not accessible from public internet. This can be due to your ISP simply blocking it, because you are behind NAT or because you didn't port-forward your server and didn't make firewall rule so given port can be accessed.</div>
+            </div>
+        </div>
+        <div class="post">
+            <h3>I cannot connect any server, my game version is 1.1.1.5767</h3>
+            <div class="answ">For some reason, Crytek doesn't provide patch downloads on their website anymore, but you can download them here: <br>
+                <ul>
+                    <li>
+                        <a href="https://crysis.nullptr.one/Crysis_Patch_1_2.exe" rel="nofollow">Patch 1.2</a>
+                    </li>
+                    <li>
+                        <a href="https://crysis.nullptr.one/Crysis_Patch_1_2_1.exe" rel="nofollow">Patch 1.2.1</a>
+                    </li>
+                </ul>
+                <strong>In order for it to work, you must install Patch 1.2 first, and then install Patch 1.2.1</strong>
+            </div>
+        </div>
+        <div class="post">
+            <h3>I have AMD CPU and my game is crashing</h3>
+            <div class="answ">
+                <div>Make sure you are launching <b>game.exe</b> installed by installer and not Crysis.exe or Crysis64.exe when running the game. </div>
+            </div>
+        </div>
+        <div class="post">
+            <h3>Do I need to register here and how to create an account?</h3>
+            <div class="answ">
+                <div>No, you do not need to register in order to play. If you don't register, you will simply be assigned your static profile ID based on your machine hardware ID.</div>
+                <div>By registering you will gain your own profile ID, so even if you change computer, your stats will still be collected to this account</div>
+            </div>
+        </div>
+        <div class="post">
+            <h3>Didn't find what you were looking for?</h3>
+            <div class="answ"> For more info, check forum, maybe somebody already had similar problem like you, so maybe you find the solution there. </div>
+        </div>
+    </div>
+</div>
+<?include footer.priv.html ?>

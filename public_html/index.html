@@ -1,10 +1,12 @@
 <?include header.priv.html ?>
 <div class="bg">
-    <?lu | <div id="wrap" data-image="#[[IMAGE_OF_THE_DAY or 1:d]]" style="position: fixed; width: 100%; height: 100vh; left: 0px; top: 0px"></div> ?>
+    <?lu 
+        local IMAGE_OF_THE_DAY = math.floor(os.time() / 86400) % 9 + 1
+        | <div id="wrap" data-image="#[[IMAGE_OF_THE_DAY or 1:d]]" style="position: fixed; width: 100%; height: 100vh; left: 0px; top: 0px"></div> ?>
     <div class="cell">
         <div class="cell-content">
             <h1>JOIN THE BATTLE</h1>
-            <a class="primary-button hidden-sm hidden-xs" style="font-weight: 600; font-size: 1.61em;" target="_blank" th:href="@{/client?key={key}&ver=beta(key=${client})}" rel="nofollow">Play now</a>
+            <a class="primary-button hidden-sm hidden-xs" style="font-weight: 600; font-size: 1.61em;" target="_blank" rel="nofollow" href="/static/client/launcher.exe">Play now</a>
             <?lu
                 if activePlayers == 0 then
                     | <a class="primary-button hidden-md hidden-lg" href="/servers">Servers</a>
@@ -16,7 +18,7 @@
             ?>
             <a class="secondary-button" href="/faq" rel="nofollow" target="_blank">Read instructions</a>
             <a class="secondary-button" href="https://discord.gg/kY8hb2n" rel="nofollow" target="_blank">Join us at Discord</a>
-            <a class="hidden-sm hidden-xs" style="font-weight: 600; text-shadow: 0px 0px 7px black;" target="_blank" th:href="@{/client?key={key}&ver=rc(key=${client})}" rel="nofollow">... or download the old client</a>
+            <a class="hidden-sm hidden-xs" style="font-weight: 600; text-shadow: 0px 0px 7px black;" target="_blank" href="/static/client/installer.exe" rel="nofollow">... or download the old client</a>
         </div>
     </div>
 </div> 

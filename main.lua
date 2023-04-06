@@ -88,7 +88,7 @@ function crymp:getServer(ip, port)
 end
 
 function crymp:formatTime(seconds, pretty)
-    seconds = seconds or 0
+    seconds = tonumber(seconds) or 0
     if pretty then
         if seconds < 3600 then
             return math.floor(seconds / 60) .. " minutes"

@@ -20,6 +20,7 @@ SECURE_LOGIN_SALT = os.getenv("SECURE_LOGIN_SALT") or "secure-login-salt"
 TOKEN_SALT = os.getenv("TOKEN_SALT") or "token-salt"
 STATIC_ID_SALT = os.getenv("STATIC_ID_SALT") or "static-id-salt"
 RELEASE_SALT = os.getenv("RELEASE_SALT") or "release-salt"
+PROXY_SALT = os.getenv("PROXY_SALT") or "proxy-salt"
 
 function isodate(time)
     return os.date("!%Y-%m-%dT%T", time)
@@ -77,10 +78,8 @@ function crymp:getBorder()
 end
 
 function crymp:getServers()
-    return aio:cached("servers", "all", function()
-        local border = self:getBorder()
-        return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
-    end)
+    local border = self:getBorder()
+    return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
 end
 
 function crymp:getServer(ip, port)

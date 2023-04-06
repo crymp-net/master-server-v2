@@ -225,7 +225,8 @@ local statistics = orm:create(sql, {
         name = { field="name", type=orm.t.varchar(255) }
     },
 
-    findByUser = "SELECT SUM(kills) AS kills, SUM(deaths) AS deaths, SUM(`time`) AS `time` FROM statistic WHERE player_id = '%d'"
+    findByUser = "SELECT SUM(kills) AS kills, SUM(deaths) AS deaths, SUM(`time`) AS `time` FROM statistic WHERE player_id = '%d'",
+    findByIpPortPlayerIds = "SELECT * FROM statistic WHERE ip = '%s' AND port = '%d' AND player_id IN %s"
 })
 
 local releases = orm:create(sql, {

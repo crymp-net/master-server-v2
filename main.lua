@@ -88,8 +88,15 @@ function crymp:getServer(ip, port)
     return Servers.one:byIpPort(ip, port)
 end
 
-function crymp:formatTime(seconds)
+function crymp:formatTime(seconds, pretty)
     seconds = seconds or 0
+    if pretty then
+        if seconds < 3600 then
+            return math.floor(seconds / 60) .. " minutes"
+        else
+            return string.format("%d hours and %d minutes", math.floor(seconds / 3600), math.floor((seconds / 60) % 60))
+        end
+    end
     if seconds == 0 then
         seconds = "unlimited"
     else
@@ -110,6 +117,12 @@ function crymp:getUser(params)
         return Users.one:byEmail(params.email)
     elseif params.nick then
         return Users.one:byNick(params.nick)
+    end
+end
+
+function crymp:getStatistics(params)
+    if params.profileId then
+        return db.statistics.one:byUser(params.profileId)
     end
 end
 

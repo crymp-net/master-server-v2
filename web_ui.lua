@@ -77,6 +77,14 @@ function web:getForum(rights)
     return resolver
 end
 
+function web:getPicture(user)
+    if not user.picture or #user.picture <= 1 then 
+        return "/static/images/face.png"
+    else
+        return user.picture:gsub("%.?%.?/?static/", "/static/ucg/profile/")
+    end
+end
+
 function web:getForumThread(id, rights, page, perPage)
     local resolve, resolver = aio:prepare_promise()
     if type(page) == "string" then
@@ -123,11 +131,7 @@ function web:getForumThread(id, rights, page, perPage)
                 local byId = {}
                 if users then
                     for _, user in ipairs(users) do
-                        if not user.picture or #user.picture <= 1 then 
-                            user.picture = "/static/images/face.png"
-                        else
-                            user.picture = user.picture:gsub("%.?%.?/?static/", "/static/ucg/profile/")
-                        end
+                        user.picture = self:getPicture(user)
                         byId[user.id] = user
                     end
                 end

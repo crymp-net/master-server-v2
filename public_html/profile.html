@@ -1,0 +1,111 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    if not query.e.id then
+        header("400 Bad request")
+        | <h1>Invalid URL</h1>
+        return
+    end
+    local user = await(crymp:getUser{ id=tonumber(query.e.id) })
+    if not ispresent(user) then
+        header("404 Not found")
+        | <h1>User not found</h1>
+        return
+    end
+    local stats = await(crymp:getStatistics{ profileId = user.id })
+    local isMe = session.logged and session.logged.id == user.id
+    local picture = crymp.web:getPicture(user)
+    ```
+    <table>
+        <tr>
+            <td>
+    ```
+
+    if isMe then
+    |           <label class="profile-picture profile-upload" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture">
+    |               <div style="text-align: center; width: 100%; font-weight: 400; color: white; text-shadow: 0px 0px 2px #333">[change]</div>
+    |           </label>
+    |           <input name="profile_csrf" id="profile_csrf" value="#[[to_url('/api/profile_picture', {user=session.logged.id, iv=true})]]" type="hidden">
+    |           <input name="file" id="file" type="file" style="display: none" onchange="changeProfilePicture()">
+    else
+    |           <div class="profile-picture" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture"></div>
+    end
+    ```
+            </td>
+            <td>
+                <h1 style="margin-top: 0px; margin-bottom: 0px">&nbsp;
+                    <a href="#" class="user4">#[[user.display]]</a>
+                </h1>
+            </td>
+        </tr>
+    </table>
+    <style>
+        pre * {
+            font-family: Courier New;
+        }
+    </style>
+    ```
+    if isMe then
+        local ingameLogin = hash_secu_login(user.email, user.password)
+        ```
+        <div>
+            <h1>In-game log-in</h1>
+            <pre class="api-key" style="border: none; font-family: Courier New">secu_login <span>#[[user.nick]]</span> <span>#[[ingameLogin:sub(1, 7)]]</span><span style="font-family: Courier New; filter: blur(6px);">#[[ingameLogin:sub(8, 34)]]</span><span>#[[ingameLogin:sub(35)]]</span></pre>
+        </div>
+        ```
+    end
+    
+    | <h1>Basic info</h1>
+    if isMe then
+    | <div>
+    |    <strong>ID: </strong><strong>1</strong><br>
+    |    <strong>Nickname: </strong><strong>Zi</strong><br>
+    | </div>
+    end
+    if session.logged and session.logged.rights >= 4 then
+        local lastSeen = os.date("*t", user.lastSeen)
+        lastSeen = string.format("%d. %d. %d", lastSeen.day, lastSeen.month, lastSeen.year)
+    | <div>
+    |    <strong>Last seen: </strong><span>#[[lastSeen]]</span><br>
+    | </div>
+    end
+
+    local memberSince = os.date("*t", user.createdAt)
+    memberSince = string.format("%d. %d. %d", memberSince.day, memberSince.month, memberSince.year)
+    
+    | <div class="public">
+    |    <strong>Member since: </strong><span>#[[memberSince]]</span><br>
+    if user.motto and #user.motto > 0 then
+    |    <span>
+    |        <strong>Motto: </strong><span>#[[user.motto]]</span><br>
+    |    </span>
+    end
+    | </div>
+
+    ```
+    <h1>Statistics</h1>
+    <table>
+        <tr>
+            <th style="text-align: left; width: 120px">Kills: </th>
+            <td>#[[stats.kills or 0]]</td>
+        </tr>
+        <tr>
+            <th style="text-align: left">Deaths: </th>
+            <td>#[[stats.deaths or 0]]</td>
+        </tr>
+        <tr>
+            <th style="text-align: left">Played time: </th><td>#[[crymp:formatTime(stats.playedTime or 0, true)]]</td>
+        </tr>
+    </table>
+    ```
+
+    if isMe then
+        ```
+        <div>
+            <a href="/remove_profile" target="_blank">Remove my profile</a>
+        </div>
+        ```
+    end
+?>
+</div>
+<?include footer.priv.html ?>

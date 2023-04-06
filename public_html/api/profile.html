@@ -13,7 +13,7 @@
                 | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
                 return
             end
-            local stats = {kills=0, deaths=0,playedTime=0}
+            local stats = await(crymp:getStatistics{ profileId = user.id })
             local token = hash_secu_login(user.email, user.password)
             ```
             <AccountInfo>

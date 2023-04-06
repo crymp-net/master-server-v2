@@ -104,7 +104,10 @@ local users = orm:create(sql, {
         email = { field = "email", type = orm.t.text },
         display = { field = "display", type = orm.t.text },
         rights = { field = "rights", type = orm.t.int },
-        picture = { field = "photo", type=orm.t.text }
+        picture = { field = "photo", type=orm.t.text },
+        createdAt = { field = "date", type=orm.t.int },
+        lastSeen = { field = "online", type=orm.t.int },
+        motto = { field="status", type=orm.t.text }
     },
     findById = true,
     findByIdIn = "WHERE id IN %s",
@@ -208,6 +211,23 @@ local staticIds = orm:create(sql, {
     findByHwid = true
 })
 
+local statistics = orm:create(sql, {
+    source = "statistic",
+    index = {"ip", "port", "profile_id"},
+    --- @type ormentity
+    entity = {
+        ip = { field = "ip", type = orm.t.varchar(255) },
+        playerId = { field = "player_id", type = orm.t.int },
+        port = { field = "port", type = orm.t.int },
+        kills = { field = "kills", type = orm.t.int },
+        deaths = { field = "deaths", type = orm.t.int },
+        playedTime = { field = "time", type = orm.t.int },
+        name = { field="name", type=orm.t.varchar(255) }
+    },
+
+    findByUser = "SELECT SUM(kills) AS kills, SUM(deaths) AS deaths, SUM(`time`) AS `time` FROM statistic WHERE player_id = '%d'"
+})
+
 local releases = orm:create(sql, {
     source = "releases",
     index = {"release_type"},
@@ -243,5 +263,6 @@ return {
     categories = categories,
     maps = maps,
     staticIds = staticIds,
-    releases = releases
+    releases = releases,
+    statistics = statistics
 }

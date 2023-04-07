@@ -2,6 +2,7 @@
 <script src="/static/js/forum.js"></script>
 <div class="container padd-16 content">
 <?lu
+    locals.title = "Forum"
     local function pager(id, page, pages)
     |   <div style="padding: 4px; float: right;"><strong>Page:
         for i=0, pages do
@@ -26,6 +27,7 @@
         | <h1>Invalid thread</h1>
         return
     else
+        locals.title = thread.name
         | <h1>#[[thread.name]]</h1>
         pager(thread.id, thread.page, thread.pages)
         | <br style="clear: both">

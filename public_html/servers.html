@@ -1,6 +1,7 @@
 <?include header.priv.html ?>
 <div class="container padd-16 content">
 <?lu
+    locals.title = "Servers"
     local function write_server_header(server)
         local online = server.numPlayers or 0
         | <div class="server-info cell">

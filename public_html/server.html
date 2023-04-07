@@ -1,6 +1,7 @@
 <?include header.priv.html ?>
 <div class="container padd-16 content">
 <?lu
+    locals.title = "Servers"
     query = query.e
     if not query.ip or not query.port then
         | <h1>Invalid server</h1>
@@ -9,6 +10,7 @@
         if not server then
             | <h1>Server is not online</h1>
         else
+            locals.title = server.name
             | <div class="serverline">
             |   <div class="hidden-xs hidden-sm image">
             local map_sanitized = (server.map or ""):lower():gsub("/", "_")

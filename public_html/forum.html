@@ -2,13 +2,15 @@
 <script src="/static/js/forum.js"></script>
 <div class="container padd-16 content">
 <?lu
+    locals.title = "Forum"
+    
     local rights = 1
     if session.logged then
         rights = session.logged.rights
     end
     local forum = await(crymp.web:getForum(rights))
 
-    function threadRow(thread)
+    local function threadRow(thread)
     ```
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
         <a class="thread-link" rel="ugc" href="#[[to_url('/thread', {id=thread.id, page='last', e=false})]]">#[[thread.name]]</a>

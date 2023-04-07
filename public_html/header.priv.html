@@ -52,9 +52,11 @@
                         write([[<li class="]] .. serversClass .. [["><a href="/servers">Servers ]] .. extra .. [[</a>]])
                     ?>
                     <li><a href="/forum" class="#[[endpoint == '/forum' and 'active' or '']]">Forum</a></li>
+                    <?lu
                     if session.logged and endpoint == "/forum" then
                         | <li><a href="/create_thread">+Create thread</a></li>
                     end
+                    ?>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <?lu

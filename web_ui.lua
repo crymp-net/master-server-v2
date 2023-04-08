@@ -10,6 +10,7 @@ local web = {}
 function web:getForum(rights)
     return aio:cached("forum", tostring(rights), function()
         local resolve, resolver = aio:prepare_promise()
+        local latest, latest3 = {}, {}
         local categoriesFuture = db.categories.all:by()
         local subcategoriesFuture = db.subcategories.all:by()
         local threadsFuture = db.threads.all:by({orderBy = "subc ASC, last_post_time DESC"})
@@ -40,8 +41,17 @@ function web:getForum(rights)
                             table.insert(bucket, thread)
                             userIds[thread.author] = true
                             table.insert(postIds, thread.lastPostId)
+                            table.insert(latest, thread)
                         end
                     end
+                end
+
+                table.sort(latest, function (a, b)
+                    return a.lastPostTime > b.lastPostTime
+                end)
+
+                for i=1, math.min(#latest, 3) do
+                    table.insert(latest3, latest[i])
                 end
 
                 db.posts.all:findAuthorByIdIn(postIds)(function (result)
@@ -64,12 +74,28 @@ function web:getForum(rights)
                                 thread.author = users[thread.author] or DELETED_USER
                                 thread.lastPostBy = users[postAuthors[thread.lastPostId] or 0] or DELETED_USER
                             end
+                            if #latest3 > 0 then
+                                table.insert(forum, {
+                                    rights = 1,
+                                    id = 0,
+                                    name = "Latest",
+                                    subcategories = {
+                                        {
+                                            rights = 1,
+                                            id = 0,
+                                            name = "Latest threads",
+                                            threads = latest3
+                                        }
+                                    }
+                                })
+                            end
                             for _, category in ipairs(categories) do
                                 if category.rights <= rights then
                                     category.subcategories = perCategory[category.id] or {}
                                     table.insert(forum, category)
                                 end
                             end
+
                             resolve(forum)
                         end)
                     else

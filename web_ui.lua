@@ -4,6 +4,9 @@ local DELETED_USER = {display="Aztec", id=0, rights=4}
 --- @class web_ui
 local web = {}
 
+--- Get entire forum as a traversable tree structure for UI (can be cached later as well)
+---@param rights integer requester user rights
+---@return fun(on_resolved: fun(...: any)|thread)
 function web:getForum(rights)
     local resolve, resolver = aio:prepare_promise()
     local categoriesFuture = db.categories.all:by()
@@ -77,6 +80,9 @@ function web:getForum(rights)
     return resolver
 end
 
+--- Get URL of user's profile picture
+---@param user any user object
+---@return string picture URL
 function web:getPicture(user)
     if not user.picture or #user.picture <= 1 then 
         return "/static/images/face.png"
@@ -85,6 +91,12 @@ function web:getPicture(user)
     end
 end
 
+--- Get forum thread at given page with all required user objects
+---@param id integer thread id
+---@param rights integer requester rights
+---@param page integer|string page
+---@param perPage integer posts per page
+---@return fun(on_resolved: fun(...: any)|thread)
 function web:getForumThread(id, rights, page, perPage)
     local resolve, resolver = aio:prepare_promise()
     if type(page) == "string" then
@@ -94,7 +106,7 @@ function web:getForumThread(id, rights, page, perPage)
             page = tonumber(page) or 0
         end
     else
-        page = tonumber(page)
+        page = tonumber(page) or 1
     end
     local threadFuture = db.threads.one:byId(id)
     local postsFuture = db.posts.all:byThread(id)
@@ -192,6 +204,9 @@ function web:getPostById(postId)
     return db.posts.one:byId(postId)
 end
 
+--- Encode forum post into HTML
+---@param text string original text
+---@return string text encoded as HTML
 function web:encodePostText(text)
     return aio:cached("post", text, function()
         text = codec.html_encode(text)
@@ -229,6 +244,42 @@ function web:encodePostText(text)
 
         return text
     end)
+end
+
+function web:getTop10(ip, port)
+    local resolve, resolver = aio:prepare_promise()
+    db.statistics.all:byTop10(ip, port)(function (result)
+        if iserror(result) then
+            resolve(result)
+        elseif not result then
+            resolve(nil)
+        else
+            local profileIds = {}
+            local records = {}
+            for _, stat in ipairs(result) do
+                if stat.playerId < 800000 and stat.playerId >= 1 then
+                    table.insert(profileIds, stat.playerId)
+                    records[stat.playerId] = stat
+                end
+            end
+            if #profileIds == 0 then
+                resolve(result)
+            else
+                db.users.all:byIdIn(profileIds)(function (users)
+                    if not users or iserror(users) then
+                        resolve(result)
+                    else
+                        for _, user in ipairs(users) do
+                            records[user.id].display = user.display
+                            records[user.id].rights = user.rights
+                        end
+                    end
+                    resolve(result)
+                end)
+            end
+        end
+    end)
+    return resolver
 end
 
 return web

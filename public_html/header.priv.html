@@ -1,7 +1,5 @@
-<?include shared.priv.html ?>
-<!doctype html>
+<?include shared.priv.html ?><!doctype html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -41,6 +39,7 @@
                 <ul class="nav navbar-nav">
                     <?lu
                         local activePlayers = await(crymp:getActivePlayers())
+                        locals.activePlayers = activePlayers
                         local extra = string.format([[ (<b><span>%d</span><span class="hidden-sm"> players online</span></b>)]], activePlayers)
                         if activePlayers == 0 then
                             extra = ""

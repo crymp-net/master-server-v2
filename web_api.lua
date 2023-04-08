@@ -69,8 +69,8 @@ function api:toServerUpdate(query, ip, port, source)
     return obj
 end
 
---- To public server entity
----@param server server_object
+--- To public server entity that can be used in API responses
+---@param server server_object server to be sanitized
 ---@param own_ip string|nil ip of requester
 function api.toPublic(server, own_ip)
     local players = crymp:exportPlayers(server.source == "gamespy" and server.players or server.gamespyPlayers)
@@ -283,6 +283,11 @@ function api:issueToken(profileId, time, nickname, name)
     }
 end
 
+--- Update per player statistics for given server
+---@param server server_object current server object
+---@param before server_object past server object (to compute delta against)
+---@param delta integer delta time in seconds
+---@return fun(on_resolved: fun(...: any)|thread)
 function api:updateStatistics(server, before, delta)
     local resolve, resolver = aio:prepare_promise()
     if delta > 180 then

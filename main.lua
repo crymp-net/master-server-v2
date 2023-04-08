@@ -90,10 +90,16 @@ end
 function crymp:formatTime(seconds, pretty)
     seconds = tonumber(seconds) or 0
     if pretty then
+        local h, m, a = "hours", "minutes", " and "
+        if pretty == "short" then
+            h = "h"
+            m = "min"
+            a = ", "
+        end
         if seconds < 3600 then
-            return math.floor(seconds / 60) .. " minutes"
+            return math.floor(seconds / 60) .. " " .. m
         else
-            return string.format("%d hours and %d minutes", math.floor(seconds / 3600), math.floor((seconds / 60) % 60))
+            return string.format("%d %s%s%d %s", math.floor(seconds / 3600), h, a, math.floor((seconds / 60) % 60), m)
         end
     end
     if seconds == 0 then
@@ -137,7 +143,7 @@ function crymp:getActivePlayers()
     return on_resolved
 end
 
---- Convert @name%rank,kills,deaths,pid%team ... string to objects
+--- Convert @name%rank%kills%deaths%pid%team ... string to objects
 ---@param text any
 ---@return {name: string, rank: number, kills: number, deaths: number, profile_id: number, team: number|nil}[] players
 function crymp:exportPlayers(text)

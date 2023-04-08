@@ -11,24 +11,111 @@
             | <h1>Server is not online</h1>
         else
             locals.title = server.name
-            | <div class="serverline">
-            |   <div class="hidden-xs hidden-sm image">
             local map_sanitized = (server.map or ""):lower():gsub("/", "_")
             local possible_path = "/static/images/maps/" .. map_sanitized .. ".jpg"
-            |       <object data="#[[possible_path]]" type="image/jpeg">
-            |           <img src="/static/images/map404.png">
-            |       </object>
-            |   </div>
-            |   <div class="serverinfo">
-            |       <h1>#[[server.name]]</h1>
-            |       <h4>
-            |           <p>Players: <span>#[[server.numPlayers]]/#[[server.maxPlayers]]</span></p>
-            |           <p>Map: <span>#[[server.mapName or server.map]]</span></p>
-            |           <p>Game rules: <span>#[[crymp:getGameRules(server.map)]]</span></p>
-            |           <p>Time left: <span>#[[crymp:formatTime(server.timeLeft)]]</span>
-            |           </p>
-            |       </h4>
-            |   </div>
+            local ranks = {"PRI", "COR", "SGT", "LT", "CPT", "MAJ", "COL", "GEN"}
+            local top10 = nil
+            if server.ranked then
+                top10 = await(crymp.web:getTop10(server.ip, server.port))
+            end
+            ```
+            <div class="serverline">
+                <div class="hidden-xs hidden-sm image">
+                    <object class="image" data="#[[possible_path]]" type="image/jpeg">
+                        <img src="/static/images/map404.png">
+                    </object>
+                </div>
+                <div class="serverinfo">
+                    <h1>#[[server.name]]</h1>
+                    <h4>
+                        <p>Players: <span>#[[server.numPlayers]]/#[[server.maxPlayers]]</span></p>
+                        <p>Map: <span>#[[server.mapName or server.map]]</span></p>
+                        <p>Game rules: <span>#[[crymp:getGameRules(server.map)]]</span></p>
+                        <p>Time left: <span>#[[crymp:formatTime(server.timeLeft)]]</span>
+                    </p>
+                    </h4>
+                </div>
+            </div>
+
+            <h3>Players</h3>
+            <div class="nice-table playerslist">
+                <div class="row header">
+                    <div class="col-xs-6">Player</div>
+                    <div class="hidden-xs col-sm-2">
+                        <span>Rank</span>
+                    </div>
+                    <div class="col-xs-3 col-sm-2">
+                        <span>Kills</span>
+                    </div>
+                    <div class="col-xs-3 col-sm-2">
+                        <span>Deaths</span>
+                    </div>
+                </div>
+            ```
+            local players = crymp:exportPlayers(server.players)
+            table.sort(players, function(a, b)
+                if a.rank ~= b.rank then
+                    return a.rank > b.rank
+                end
+                if a.kills ~= b.kills then
+                    return a.kills > b.kills
+                end
+                return a.deaths < b.deaths
+            end)
+            if #players == 0 then
+                | <div class="row normal horizontal-center">There are no players online now</div>
+            else
+                for _, player in ipairs(players) do
+                    ```
+                    <div class="row normal">
+                        <div class="col-xs-6">#[[player.name]]</div>
+                        <div class="hidden-xs col-sm-2">#[[ranks[player.rank] or "-"]]</div>
+                        <div class="col-xs-3 col-sm-2">#[[player.kills]]</div>
+                        <div class="col-xs-3 col-sm-2">#[[player.deaths]]</div>
+                    </div>
+                    ```
+                end
+            end
+            
+            ```
+            </div>
+            <h3>Top 10</h3>
+            <div class="nice-table playerslist">
+                <div class="row header">
+                    <div class="col-xs-6">Player</div>
+                    <div class="col-xs-3 col-sm-2">
+                        <span>Kills</span>
+                    </div>
+                    <div class="col-xs-3 col-sm-2">
+                        <span>Deaths</span>
+                    </div>
+                    <div class="col-xs-3 col-sm-2">
+                        <span>Played time</span>
+                    </div>
+                </div>
+            ```
+            if iserror(top10) then
+                | <div class="row normal horizontal-center">Error occured when retrieving the list</div>
+            elseif not top10 or #top10 == 0 then
+                | <div class="row normal horizontal-center">No statistics collected yet</div>
+            else
+                for _, player in ipairs(top10) do
+                    | <div class="row normal">
+                    if player.display then
+                    |   <div class="col-xs-6"><a href="#[[to_url('/profile', {id=player.playerId, iv=false})]]" class="user#[[player.rights]]">#[[player.display]]</a></div>
+                    elseif player.playerId > 1000000 then
+                    |   <div class="col-xs-6"><span>#[[player.name]]</span><small>##[[player.playerId]]</small></div>
+                    else
+                    |   <div class="col-xs-6"><span>#[[player.name]]</span></div>
+                    end
+                    ```
+                        <div class="col-xs-3 col-sm-2">#[[player.kills]]</div>
+                        <div class="col-xs-3 col-sm-2">#[[player.deaths]]</div>
+                        <div class="col-xs-3 col-sm-2">#[[crymp:formatTime(player.playedTime, "short")]]</div>
+                    </div>
+                    ```
+                end
+            end
             | </div>
         end
     end

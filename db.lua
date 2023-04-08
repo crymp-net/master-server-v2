@@ -226,7 +226,8 @@ local statistics = orm:create(sql, {
     },
 
     findByUser = "SELECT SUM(kills) AS kills, SUM(deaths) AS deaths, SUM(`time`) AS `time` FROM statistic WHERE player_id = '%d'",
-    findByIpPortPlayerIds = "SELECT * FROM statistic WHERE ip = '%s' AND port = '%d' AND player_id IN %s"
+    findByIpPortPlayerIds = "SELECT * FROM statistic WHERE ip = '%s' AND port = '%d' AND player_id IN %s",
+    findByTop10 = "SELECT * FROM statistic WHERE ip = '%s' AND port = '%d' ORDER BY kills DESC, deaths ASC, `time` ASC LIMIT 10"
 })
 
 local releases = orm:create(sql, {

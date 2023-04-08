@@ -1,0 +1,66 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    local sid = tonumber(query.sid)
+    if not sid then
+        status("400 Bad request")
+        | <h1>Bad request</div>
+        return
+    end
+    local rights = 1
+    if session.logged then rights = session.logged.rights end
+    local subc = await(crymp.web:getSubcategory(rights, sid))
+    if not subc then
+        status("404 Not found")
+        | <h1>Not found</div>
+        return
+    elseif iserror(subc) then
+        if subc.error == "unauthorized" then
+            status("401 Unauthorized")
+            | <h1>Unauthorized</div>
+        else
+            status("500 Internal server error")
+            | <h1>Server error</div>
+        end
+        return
+    else
+        | <h1>#[[subc.name]]</h1>
+        | <div class="threads nice-table">
+        for _, thread in ipairs(subc.threads) do
+        ```
+        <div style="display: flex; align-items: center" class="row normal-0 thread-row">
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <a class="thread-link" rel="ugc" href="/thread?id=59&amp;page=last">#[[thread.name]]</a>
+                <div class="hidden-md hidden-lg">
+                    <div>
+                        <small>
+                                Last post by <a class="user#[[thread.lastPostBy.rights]]" href="#[[to_url('/profile', {id=thread.lastPostBy.id})]]">#[[thread.lastPostBy.display]]</a> - <time datetime="#[[isodate(thread.lastPostTime)]]" relative-time>#[[isodate(thread.lastPostTime)]]</time>
+                        </small>
+                    </div>
+                    <div>
+                        <small>
+                                Created by <a class="user#[[thread.author.rights]]" href="#[[to_url('/profile', {id=thread.author.id})]]">#[[thread.author.display]]</a> - <time datetime="#[[isodate(thread.createdAt)]]" relative-time>#[[isodate(thread.createdAt)]]</time>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden-xs hidden-sm col-md-6 col-lg-6">
+                <div>
+                    <small>
+                            Last post by <a class="user#[[thread.lastPostBy.rights]]" href="#[[to_url('/profile', {id=thread.lastPostBy.id})]]">#[[thread.lastPostBy.display]]</a> - <time datetime="#[[isodate(thread.lastPostTime)]]" relative-time>#[[isodate(thread.lastPostTime)]]</time>
+                    </small>
+                </div>
+                <div>
+                    <small>
+                            Created by <a class="user#[[thread.author.rights]]" href="#[[to_url('/profile', {id=thread.author.id})]]">#[[thread.author.display]]</a> - <time datetime="#[[isodate(thread.createdAt)]]" relative-time>#[[isodate(thread.createdAt)]]</time>
+                    </small>
+                </div>
+            </div>
+        </div>
+        ```
+        end
+        | </div>
+    end
+?>
+</div>
+<?include footer.priv.html ?>

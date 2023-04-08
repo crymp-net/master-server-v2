@@ -151,6 +151,7 @@ local threads = orm:create(sql, {
         lastPostId = { field="last_post_id", type=orm.t.int },
         lastPostTime = { field="last_post_time", type=orm.t.int }
     },
+    findBySubc = true,
     findById = true,
     findBy = true
 })

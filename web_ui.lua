@@ -108,6 +108,61 @@ function web:getForum(rights)
     end, 5)
 end
 
+function web:getSubcategory(rights, subcategory_id)
+    return aio:cached("forum", "sub" .. rights, function()
+        local resolve, resolver = aio:prepare_promise()
+        db.subcategories.one:byId(subcategory_id)(function (subcategory)
+            if not subcategory or iserror(subcategory) then
+                resolve(subcategory)
+                return
+            end
+            if subcategory.rights > rights then
+                resolve({error = "unauthorized"})
+                return
+            end
+            db.threads.all:bySubc(subcategory_id, {orderBy="last_post_time DESC, id DESC"})(function (threads)
+                if not threads or iserror(threads) then
+                    resolve({error = "failed to fetch threads"})
+                    return
+                end
+                local userIds = {}
+                local posts = {}
+                for _, thread in ipairs(threads) do
+                    table.insert(posts, thread.lastPostId)
+                    userIds[thread.author] = false
+                end
+                db.posts.all:findAuthorByIdIn(posts)(function (result)
+                    if not result or iserror(result) then
+                        resolve({error = "failed to fetch author ids"})
+                        return
+                    end
+                    local postAuthors = {}
+                    for _, post in ipairs(result) do
+                        userIds[post.author] = false
+                        postAuthors[post.id] = post.author
+                    end
+                    db.users.all:byIdIn(keys(userIds))(function (users)
+                        if not result or iserror(result) then
+                            resolve({error = "failed to fetch authors"})
+                            return
+                        end
+                        for _, user in ipairs(users) do
+                            userIds[user.id] = user
+                        end
+                        for _, thread in ipairs(threads) do
+                            thread.author = userIds[thread.author] or DELETED_USER
+                            thread.lastPostBy = userIds[postAuthors[thread.lastPostId] or 0] or DELETED_USER
+                        end
+                        subcategory.threads = threads
+                        resolve(subcategory)
+                    end)
+                end)
+            end)
+        end)
+        return resolver
+    end, 5)
+end
+
 --- Get URL of user's profile picture
 ---@param user any user object
 ---@return string picture URL
@@ -271,48 +326,45 @@ function web:likePost(user, post_id)
     return resolver
 end
 
+--- Remove forum post, if thread becomes empty, remove thread as well
+---@param postId integer post ID
+---@return fun(on_resolved: fun(...: any)|thread)
 function web:removePost(postId)
     local resolve, resolver = aio:prepare_promise()
     self:getPostById(postId)(function (post)
         if not post then
-            print("post didnt exist", postId)
             resolve({ok = true})
         elseif iserror(post) then
-            print("post was error")
             resolve(post)
         else
             local thread = post.thread
             db.posts.deleteOne:byId(postId)(function (result)
                 if not result or iserror(result) then
-                    print("failed to deleete post")
                     resolve(result)
-                else
-                    db.posts.count:byThread(thread)(function (posts)
-                        if not posts then
-                            print("failed to get last post")
-                            resolve(result)
-                        elseif posts == 0 then
-                            print("zero posts")
-                            -- if there are 0 posts left, delete thread as well
-                            db.threads.deleteOne:byId(thread)(function (thr_result)
-                                print("1")
-                                resolve(thr_result)
-                            end)
-                        else
-                            -- ignore any errors happening here
-                            print("2")
-                            db.posts.one:byThread(thread, {orderBy = "id DESC"})(function (lastPost)
-                                if not lastPost or iserror(lastPost) then
-                                    resolve(result)
-                                else
-                                    db.threads:update({id = thread}, {lastPostId=lastPost.id, lastPostTime=lastPost.createdAt})(function (result)
-                                        resolve(result)
-                                    end)
-                                end
-                            end)
-                        end
-                    end)
+                    return
                 end
+                db.posts.count:byThread(thread)(function (posts)
+                    if not posts then
+                        resolve(result)
+                        return
+                    elseif posts == 0 then
+                        -- if there are 0 posts left, delete thread as well
+                        db.threads.deleteOne:byId(thread)(function (thr_result)
+                            resolve(thr_result)
+                        end)
+                        return
+                    end
+                    -- ignore any errors happening here
+                    db.posts.one:byThread(thread, {orderBy = "id DESC"})(function (lastPost)
+                        if not lastPost or iserror(lastPost) then
+                            resolve(result)
+                            return
+                        end
+                        db.threads:update({id = thread}, {lastPostId=lastPost.id, lastPostTime=lastPost.createdAt})(function (result)
+                            resolve(result)
+                        end)
+                    end)
+                end)
             end)
         end
     end)

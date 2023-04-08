@@ -1,0 +1,25 @@
+<?lu 
+    header("content-type", "text/xml")
+    if not query.a and not query.b then
+        status("400 Bad request")
+        | <ErrorMessage><error>failed to login</error></ErrorMessage>
+        return
+    end
+    local result = await(crymp.api:login(query.a, query.b))
+    if not result or iserror(result) then
+        | <ErrorMessage><error>failed to login</error></ErrorMessage>
+        return
+    end
+    local user = await(crymp:getUser{id = result.id})
+    if not user or iserror(user) then
+        | <ErrorMessage><error>failed to login</error></ErrorMessage>
+        return
+    end
+    ```
+    <AuthResponse>
+        <id>#[[user.id]]</id>
+        <nickname>#[[user.nick]]</nickname>
+        <token>#[[hash_secu_login(user.email, user.password)]]</token>
+    </AuthResponse>
+    ```
+?>

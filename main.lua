@@ -77,9 +77,14 @@ function crymp:getBorder()
     return orm.t.datetime.toformat(os.time() - 86400 * 365)
 end
 
-function crymp:getServers()
+function crymp:getServers(all)
+    all = all or false
     local border = self:getBorder()
-    return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
+    if all then
+        return Servers.all:byActiveAll(border, {orderBy="num_players DESC, rating DESC, is_real DESC"})
+    else
+        return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
+    end
 end
 
 function crymp:getServer(ip, port)

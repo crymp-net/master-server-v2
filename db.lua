@@ -43,6 +43,7 @@ end
 --- @field rating number|nil
 --- @field gamepadsOnly boolean
 --- @field friendlyFire boolean
+--- @field isReal boolean
 
 --- @type ormrepo
 local servers = orm:create(sql, {
@@ -91,6 +92,7 @@ local servers = orm:create(sql, {
     findByIsReal = true,
     findBy = true,
     findByActive = "SELECT * FROM server WHERE last_updated > '%s' AND is_real = '\\1'",
+    findByActiveAll = "SELECT * FROM server WHERE last_updated > '%s'",
     findByOnline = "SELECT SUM(num_players) AS total_players FROM server WHERE last_updated > '%s' AND is_real = '\\1'"
 })
 

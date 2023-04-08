@@ -127,6 +127,7 @@ function api.toPublic(server, own_ip)
         ver = server.gameVersion or 6156,
         ntimel = server.timeLeft,
         timel = crymp:formatTime(server.timeLeft),
+        available = server.isReal and 1 or 0,
 
         dx10 = server.dx10,
         voicecomm = server.voiceChat,
@@ -135,6 +136,7 @@ function api.toPublic(server, own_ip)
         gamepadsonly = server.gamepadsOnly,
         friendlyfire = server.friendlyFire,
         rating = server.rating,
+        source = server.source or "http",
 
         gs = server.dx10 ~= nil
     }

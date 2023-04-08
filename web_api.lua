@@ -279,7 +279,7 @@ function api:issueToken(profileId, time, nickname, name)
 
     return {
         id = profileId,
-        token = hash(signing .. TOKEN_SALT) .. "_" .. time,
+        token = codec.hex_encode(crypto.hmac_sha256(signing, TOKEN_SALT)) .. "_" .. time,
         nickname = nickname,
         name = name
     }

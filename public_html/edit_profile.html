@@ -1,0 +1,47 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    if not session.logged then
+        status("302 Temporary redirect")
+        header("location", "/login")
+        return
+    end
+    local user = session.logged
+    local picture = crymp.web:getPicture(user)
+
+    ```
+    <table>
+        <tr>
+            <td>
+    ```
+
+    locals.title = "Edit profile"
+    if changeable then
+    |   <label class="profile-picture profile-upload" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture">
+    |      <div style="text-align: center; width: 100%; font-weight: 400; color: white; text-shadow: 0px 0px 2px #333">[change]</div>
+    |   </label>
+    |   <input name="profile_csrf" id="profile_csrf" value="#[[to_url('/api/profile_picture', {user=session.logged.id, iv=true})]]" type="hidden">
+    |   <input name="file" id="file" type="file" style="display: none" onchange="changeProfilePicture()">
+    else
+    |   <div class="profile-picture" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture"></div>
+    end
+    ```
+            </td>
+            <td>
+                <h1 style="margin-top: 0px; margin-bottom: 0px">&nbsp;
+                    <a href="#" class="user#[[user.rights]]">#[[user.display]]</a>
+                </h1>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <form method="post" action="#[[to_url('/edit_profile', {user=session.logged.id, iv=true})]]">
+        <label for="motto">Motto</label>
+        <br>
+        <input id="motto" maxlength="500" placeholder="Your motto" class="nice-input no-margin full-input" name="motto" autocomplete="off" value="#[[user.motto or '']]">
+        <input type="submit" name="submit" class="nice-button no-margin" value="Save changes" style="width: 100%">
+    </form>
+    ```
+?>
+</div>
+<?include footer.priv.html ?>

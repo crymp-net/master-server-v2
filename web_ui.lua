@@ -423,6 +423,14 @@ function web:getPostById(postId)
     return db.posts.one:byId(postId)
 end
 
+--- Update user profile
+---@param user any requester user
+---@param params any params to update
+---@return any
+function web:updateProfile(user, params)
+    return db.users:update(user, params)
+end
+
 --- Encode forum post into HTML
 ---@param text string original text
 ---@return string text encoded as HTML

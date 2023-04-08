@@ -1,0 +1,19 @@
+<?include shared.priv.html ?><?lu
+    if not session.logged then
+        status("401 Unauthorized")
+        return
+    end
+    local redirect = to_url("/profile", {id = session.logged.id})
+    local params = aio:parse_query(body)
+    if params and params.motto and params.submit and query.e and tonumber(query.e.user) == session.logged.id then
+        local motto = params.motto:gsub("^%s+", ""):gsub("%s+$", "")
+        local ok = crymp.web:updateProfile(session.logged, {motto = motto})
+        if not ok or iserror(ok) then
+            status("500 Internal server error")
+            | Sorry, something went wrong :(
+            return
+        end
+    end
+    status("302 Temporary redirect")
+    header("location", redirect)
+?>

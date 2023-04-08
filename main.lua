@@ -56,27 +56,15 @@ function keys(dict)
     return k
 end
 
-function sign(text, salt)
-    return string.format("%s.%s", text, hash(text .. salt))
-end
-
-function signed(text, salt)
-    if type(text) ~= "string" then
-        return nil
-    end
-    local payload, signature = text:match("(.*)%.([a-f0-9]+)$")
-    if payload and signature then
-        if hash(payload .. salt) == signature then
-            return payload
-        end
-    end
-    return nil
-end
-
+--- Get border timestamp for getting servers
+---@return string
 function crymp:getBorder()
     return orm.t.datetime.toformat(os.time() - 86400 * 365)
 end
 
+--- Get list of servers
+---@param all boolean|nil if true, unreachable servers are returned
+---@return aiopromise<table[]|mysqlerror>
 function crymp:getServers(all)
     return aio:cached("servers", tostring(all), function()
         all = all or false
@@ -89,11 +77,19 @@ function crymp:getServers(all)
     end, 3)
 end
 
+--- Get server by IP and port
+---@param ip string
+---@param port integer|string|nil
+---@return aiopromise<table|mysqlerror|nil>
 function crymp:getServer(ip, port)
     port = tonumber(port)
     return Servers.one:byIpPort(ip, port)
 end
 
+--- Format time
+---@param seconds integer seconds time
+---@param pretty boolean|string prettify, can be either bool or "short"
+---@return string time
 function crymp:formatTime(seconds, pretty)
     seconds = tonumber(seconds) or 0
     if pretty then
@@ -117,11 +113,17 @@ function crymp:formatTime(seconds, pretty)
     return seconds
 end
 
+--- Get game rules from map name
+---@param map string map name
+---@return string rules
 function crymp:getGameRules(map)
-    local rules = (map or "multiplayer/ps/mesa"):match("/ps/") and "PowerStruggle" or "InstantActon"
+    local rules = (map or "multiplayer/ps/mesa"):match("/ps/") and "Power Struggle" or "Instant Action"
     return rules
 end
 
+--- Get user by params
+---@param params any
+---@return aiopromise<table|nil>|nil user
 function crymp:getUser(params)
     if params.id then
         return Users.one:byId(params.id)
@@ -132,12 +134,29 @@ function crymp:getUser(params)
     end
 end
 
+--- Update last seen timestamp for user
+---@param user any requester user
+---@return nil
+function crymp:touch(user)
+    -- calling this once every 60s is fine
+    return aio:cached("touch", tostring(user.id), function ()
+        return db.users:update(user, {
+            lastSeen = os.time()
+        })
+    end, 60)
+end
+
+--- Get statistics according to params
+---@param params any params
+---@return aiopromise<{kills: integer, deaths: integer, playedTime: integer}>|nil
 function crymp:getStatistics(params)
     if params.profileId then
         return db.statistics.one:byUser(params.profileId)
     end
 end
 
+--- Get number of active players
+---@return aiopromise<integer>
 function crymp:getActivePlayers()
     return aio:cached("servers", "active", function()
         local resolve, on_resolved = aio:prepare_promise()

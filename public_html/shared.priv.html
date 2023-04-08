@@ -5,6 +5,7 @@
             local user = await(crymp:getUser{ id= tonumber(found) })
             if user then
                 session.logged = user
+                crymp:touch(user)
             end
         end
     end

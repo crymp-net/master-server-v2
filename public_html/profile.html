@@ -1,5 +1,10 @@
 <?include header.priv.html ?>
 <div class="container padd-16 content">
+<style>
+    pre * {
+        font-family: Courier New;
+    }
+</style>
 <?lu
     if not query.e.id then
         status("400 Bad request")
@@ -28,11 +33,11 @@
     |           <label class="profile-picture profile-upload" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture">
     |               <div style="text-align: center; width: 100%; font-weight: 400; color: white; text-shadow: 0px 0px 2px #333">[change]</div>
     |           </label>
+    |           <input name="profile_csrf" id="profile_csrf" value="#[[to_url('/api/profile_picture', {user=session.logged.id, iv=true})]]" type="hidden">
+    |           <input name="file" id="file" type="file" style="display: none" onchange="changeProfilePicture()">
         else
     |           <div class="profile-picture" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture"></div>
         end
-    |           <input name="profile_csrf" id="profile_csrf" value="#[[to_url('/api/profile_picture', {user=session.logged.id, iv=true})]]" type="hidden">
-    |           <input name="file" id="file" type="file" style="display: none" onchange="changeProfilePicture()">
     else
         locals.title = user.display
     |           <div class="profile-picture" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture"></div>
@@ -46,13 +51,10 @@
             </td>
         </tr>
     </table>
-    <style>
-        pre * {
-            font-family: Courier New;
-        }
-    </style>
+
     ```
     if isMe then
+        | <h4><a href="/edit_profile">[Edit profile]</a></h4>
         local ingameLogin = hash_secu_login(user.email, user.password)
         ```
         <div>

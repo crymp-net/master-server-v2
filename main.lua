@@ -82,7 +82,7 @@ function crymp:getServers(all)
         all = all or false
         local border = self:getBorder()
         if all then
-            return Servers.all:byActiveAll(border, {orderBy="num_players DESC, rating DESC, is_real DESC"})
+            return Servers.all:byActiveAll(border, {orderBy="is_real DESC, num_players DESC, rating DESC"})
         else
             return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
         end
@@ -156,6 +156,7 @@ end
 function crymp:exportPlayers(text)
     local players = {}
     text = text or ""
+    if #text < 2 then return {} end
     for player in text:gmatch("%@([^@]+)") do
         local name, rank, kills, deaths, pid = player:match("(.-)%%(%d+)%%(%d+)%%(%d+)%%(.+)")
         if name and rank and kills and deaths and pid then

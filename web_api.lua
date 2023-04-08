@@ -73,7 +73,7 @@ end
 ---@param server server_object server to be sanitized
 ---@param own_ip string|nil ip of requester
 function api.toPublic(server, own_ip)
-    local players = crymp:exportPlayers(server.source == "gamespy" and server.players or server.gamespyPlayers)
+    local players = crymp:exportPlayers(server.source == "http" and server.players or server.gamespyPlayers)
     local map = (server.map or "multiplayer/ps/mesa"):lower()
     local mapName = server.mapName or (map:sub(16))
     local own = nil

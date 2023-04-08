@@ -6,7 +6,7 @@
         header("content-type", "text/lua; charset=utf-8")
     end
     local ip = aio:get_ip(fd)
-    local servers = await(crymp:getServers())
+    local servers = await(crymp:getServers(true))
     if not servers then
         status("500 Internal server error")
         write(encode({error="server error"}))

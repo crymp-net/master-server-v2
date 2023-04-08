@@ -57,7 +57,7 @@
         | </div>
     end
 
-    local servers, err = await(crymp:getServers(true))
+    local servers, err = await(crymp:getServers(false))
     if not servers then
         | <h1>Failed to fetch servers from database</h1>
     elseif #servers == 0 then

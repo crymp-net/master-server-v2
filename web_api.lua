@@ -26,7 +26,7 @@ function api:toServerUpdate(query, ip, port, source)
     local ok = true
     local behindProxy = false
     local required = {
-        "timeLeft", "name", "players", "numPlayers", "maxPlayers", "map", "port", "ip"
+        "timeLeft", "name", "numPlayers", "maxPlayers", "map", "port", "ip"
     }
     if query.proxy_ip and query.proxy_secret == PROXY_SECRET then
         ip = query.proxy_ip
@@ -35,7 +35,7 @@ function api:toServerUpdate(query, ip, port, source)
     end
     local obj = {
         behindProxy = behindProxy,
-        source = "http",
+        source = source,
         ip = ip,
         port = tonumber(query.port),
         description = query["desc"],
@@ -65,6 +65,10 @@ function api:toServerUpdate(query, ip, port, source)
         if obj[i] == nil then
             return nil
         end
+    end
+    -- at least one must be present
+    if not obj.players and not obj.gamespyPlayers then
+        return
     end
     return obj
 end
@@ -229,15 +233,19 @@ function api:upsertServer(params, source)
                     else
                         -- resolve right away, leave stats as background job
                         resolve(existingServer.cookie)
-                        self:updateStatistics(params, existingServer, timeDelta)(function (stats)
-                            if iserror(stats) then
-                                print("failed to update player stats: ", stats.error)
-                            end
-                        end)
+                        if params.source == "http" then
+                            self:updateStatistics(params, existingServer, timeDelta)(function (stats)
+                                if iserror(stats) then
+                                    print("failed to update player stats: ", stats.error)
+                                end
+                            end)
+                        end
                     end
                 end)
             else
                 params.isReal = false
+                params.players = params.players or ""
+                params.gamespyPlayers = params.gamespyPlayers or ""
                 if params.friendlyFire == nil then params.friendlyFire = false end
                 if params.antiCheat == nil then params.antiCheat = false end
                 if params.gamepadsOnly == nil then params.gamepadsOnly = false end

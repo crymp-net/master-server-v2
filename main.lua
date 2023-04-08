@@ -139,15 +139,17 @@ function crymp:getStatistics(params)
 end
 
 function crymp:getActivePlayers()
-    local resolve, on_resolved = aio:prepare_promise()
-    Servers.one:byOnline(self:getBorder())(function (result)
-        if not result or iserror(result) then
-            resolve(0)
-        else
-            resolve(tonumber(result.total_players))
-        end
-    end)
-    return on_resolved
+    return aio:cached("servers", "active", function()
+        local resolve, on_resolved = aio:prepare_promise()
+        Servers.one:byOnline(self:getBorder())(function (result)
+            if not result or iserror(result) then
+                resolve(0)
+            else
+                resolve(tonumber(result.total_players))
+            end
+        end)
+        return on_resolved
+    end, 1)
 end
 
 --- Convert @name%rank%kills%deaths%pid%team ... string to objects

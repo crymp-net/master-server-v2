@@ -58,7 +58,7 @@ function api:toServerUpdate(query, ip, port, source)
         voiceChat = query["voicechat"] and query["voicechat"] == "1" or nil,
         dedicated = query["dedicated"] and query["dedicated"] == "1" or nil,
         antiCheat = query["anticheat"] and query["anticheat"] == "1" or nil,
-        gamepadsOnly = query["gamepadonly"] and query["gamepadonly"] == "1" or nil,
+        gamepadsOnly = query["gamepadsonly"] and query["gamepadsonly"] == "1" or nil,
         friendlyFire = query["friendlyfire"] and query["friendlyfire"] == "1" or nil
     }
     for _, i in ipairs(required) do

@@ -1,0 +1,16 @@
+<?include shared.priv.html ?><?lu
+    if not session.logged or session.logged.rights < 4 then
+        status("401 Unauthorized")
+        return
+    end
+    if query.e.id and tonumber(query.e.user) == session.logged.id then
+        local result = await(crymp.web:removePost(query.e.id))
+        if not status or iserror(result) then
+            status("500 Internal server error")
+            | Server error
+        else
+            status("302 Temporary redirect")
+            header("location", headers.referer or "/forum")
+        end
+    end
+?>

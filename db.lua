@@ -232,6 +232,18 @@ local statistics = orm:create(sql, {
     findByTop10 = "SELECT * FROM statistic WHERE ip = '%s' AND port = '%d' ORDER BY kills DESC, deaths ASC, `time` ASC LIMIT 10"
 })
 
+local likes = orm:create(sql, {
+    source = "likes",
+    id = { "post_id", "user_id" },
+    --- @type ormentity
+    entity = {
+        userId = { field = "user_id", type = orm.t.int },
+        postId = { field = "post_id", type = orm.t.int }
+    },
+    findByUserIdPostId = true,
+    findByPostId = true
+})
+
 local releases = orm:create(sql, {
     source = "releases",
     index = {"release_type"},
@@ -268,5 +280,6 @@ return {
     maps = maps,
     staticIds = staticIds,
     releases = releases,
-    statistics = statistics
+    statistics = statistics,
+    likes = likes
 }

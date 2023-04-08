@@ -221,8 +221,102 @@ function web:addForumThreadPost(user, thread_id, text)
     return resolver
 end
 
+--- Update form post text
+---@param user any requester object
+---@param threadId integer thread id
+---@param postId integer post id
+---@param text string new text
 function web:updateForumThreadPost(user, threadId, postId, text)
     return db.posts:update({id = postId}, {text=text})
+end
+
+
+--- Add or remove like from post by user
+---@param user any requester user object
+---@param post_id integer post id
+---@return fun(on_resolved: fun(result: ormerror|{incr: integer})|thread)
+function web:likePost(user, post_id)
+    local resolve, resolver = aio:prepare_promise()
+
+    local updateCounts = function ()
+        return db.posts.sql:exec("UPDATE f_posts SET like_count = (SELECT COUNT(*) FROM likes WHERE likes.post_id = '%d') WHERE f_posts.id = '%d' LIMIT 1", post_id, post_id)
+    end
+
+    db.likes.one:byUserIdPostId(user.id, post_id)(function (result)
+        if iserror(result) then
+            resolve(result)
+        elseif not result then
+            db.likes:insert({userId = user.id, postId = post_id})(function (result)
+                if not result or iserror(result) then
+                    resolve(result)
+                else
+                    updateCounts()(function (result)
+                        resolve({incr = 1})
+                    end)
+                end
+            end)
+        else
+            db.likes.deleteOne:byUserIdPostId(user.id, post_id)(function (result)
+                if not result or iserror(result) then
+                    resolve(result)
+                else
+                    updateCounts()(function (result)
+                        resolve({incr = -1})
+                    end)
+                end
+            end)
+        end
+    end)
+
+    return resolver
+end
+
+function web:removePost(postId)
+    local resolve, resolver = aio:prepare_promise()
+    self:getPostById(postId)(function (post)
+        if not post then
+            print("post didnt exist", postId)
+            resolve({ok = true})
+        elseif iserror(post) then
+            print("post was error")
+            resolve(post)
+        else
+            local thread = post.thread
+            db.posts.deleteOne:byId(postId)(function (result)
+                if not result or iserror(result) then
+                    print("failed to deleete post")
+                    resolve(result)
+                else
+                    db.posts.count:byThread(thread)(function (posts)
+                        if not posts then
+                            print("failed to get last post")
+                            resolve(result)
+                        elseif posts == 0 then
+                            print("zero posts")
+                            -- if there are 0 posts left, delete thread as well
+                            db.threads.deleteOne:byId(thread)(function (thr_result)
+                                print("1")
+                                resolve(thr_result)
+                            end)
+                        else
+                            -- ignore any errors happening here
+                            print("2")
+                            db.posts.one:byThread(thread, {orderBy = "id DESC"})(function (lastPost)
+                                if not lastPost or iserror(lastPost) then
+                                    resolve(result)
+                                else
+                                    db.threads:update({id = thread}, {lastPostId=lastPost.id, lastPostTime=lastPost.createdAt})(function (result)
+                                        resolve(result)
+                                    end)
+                                end
+                            end)
+                        end
+                    end)
+                end
+            end)
+        end
+    end)
+    return resolver
 end
 
 --- Get forum post by ID

@@ -37,20 +37,14 @@ function put(what) {
 
 function like(post){
     var id = post.getAttribute("data-post");
-    var csrf = encodeURIComponent(post.getAttribute("csrf"));
+    var csrf = post.getAttribute("csrf");
     var i = $(post).find("i.react-emote");
     var span = $(post).find("span.count");
     var n = parseInt(span.text());
-    $.post("/api/like?postId=" + id + "&csrf=" + csrf, function(resp){
+    $.post(csrf, function(resp){
         if(resp != 0){
             n += parseInt(resp);
             span.text(n);
-            i.removeClass("fa-heart").removeClass("fa-heart-o");
-            if(resp == 1){
-                i.addClass("fa-heart");
-            } else if(resp == -1){
-                i.addClass("fa-heart-o");
-            }
         }
     });
 }

@@ -1,0 +1,16 @@
+<?include shared.priv.html ?><?lu
+    if not session.logged then
+        status("401 Unauthorized")
+        return
+    end
+    if query.e.id and query.e.user and tonumber(query.e.user) == session.logged.id then
+        local liked = await(crymp.web:likePost(session.logged, query.e.id))
+        if iserror(liked) then
+            | 0
+        else
+            | #[[liked.incr]]
+        end
+    else
+        status("400 Bad request")
+    end
+?>

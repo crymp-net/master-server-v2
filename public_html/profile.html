@@ -2,13 +2,13 @@
 <div class="container padd-16 content">
 <?lu
     if not query.e.id then
-        header("400 Bad request")
+        status("400 Bad request")
         | <h1>Invalid URL</h1>
         return
     end
     local user = await(crymp:getUser{ id=tonumber(query.e.id) })
     if not ispresent(user) then
-        header("404 Not found")
+        status("404 Not found")
         | <h1>User not found</h1>
         return
     end

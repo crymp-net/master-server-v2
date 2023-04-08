@@ -125,7 +125,9 @@ body {
     min-width: 240px;
     max-width: 240px;
     width: 240px;
-    padding: 12px
+    padding: 12px;
+    vertical-align: middle;
+    border: 0px;
 }
 
 .serverline .serverinfo {

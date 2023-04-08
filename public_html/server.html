@@ -97,7 +97,11 @@
             if iserror(top10) then
                 | <div class="row normal horizontal-center">Error occured when retrieving the list</div>
             elseif not top10 or #top10 == 0 then
+                if not server.ranked then
+                | <div class="row normal horizontal-center">This server is not ranked</div>
+                else
                 | <div class="row normal horizontal-center">No statistics collected yet</div>
+                end
             else
                 for _, player in ipairs(top10) do
                     | <div class="row normal">

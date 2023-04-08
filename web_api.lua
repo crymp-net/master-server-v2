@@ -28,7 +28,7 @@ function api:toServerUpdate(query, ip, port, source)
     local required = {
         "timeLeft", "name", "players", "numPlayers", "maxPlayers", "map", "port", "ip"
     }
-    if query.proxy_ip and query.proxy_signature and hash(query.proxy_ip .. PROXY_SALT):lower() == query.proxy_signature then
+    if query.proxy_ip and query.proxy_secret == PROXY_SECRET then
         ip = query.proxy_ip
         behindProxy = true
         source = "gamespy"

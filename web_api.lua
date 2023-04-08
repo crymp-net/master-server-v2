@@ -302,7 +302,9 @@ function api:updateStatistics(server, before, delta)
         resolve({updates = 0})
     else
         for _, player in ipairs(historic) do
-            ids[player.profile_id] = player
+            if (player.profile_id >= 1 and player.profile_id > 800000) or player.profile_id > 1000000 then
+                ids[player.profile_id] = player
+            end
         end
         for _, player in ipairs(now) do
             local hit = ids[player.profile_id]
@@ -323,7 +325,7 @@ function api:updateStatistics(server, before, delta)
                 if diff.kills < 0 then diff.kills = 0 end
                 if diff.deaths < 0 then diff.deaths = 0 end
                 deltas[player.profile_id] = diff
-            else
+            elseif (player.profile_id >= 1 and player.profile_id > 800000) or player.profile_id > 1000000 then
                 deltas[player.profile_id] = {
                     ip = server.ip,
                     port = server.port,

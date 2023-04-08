@@ -15,6 +15,7 @@
     local stats = await(crymp:getStatistics{ profileId = user.id })
     local isMe = session.logged and session.logged.id == user.id
     local picture = crymp.web:getPicture(user)
+    local changeable = false -- temporary till best solution is found
     ```
     <table>
         <tr>
@@ -23,9 +24,13 @@
 
     if isMe then
         locals.title = "My profile"
+        if changeable then
     |           <label class="profile-picture profile-upload" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture">
     |               <div style="text-align: center; width: 100%; font-weight: 400; color: white; text-shadow: 0px 0px 2px #333">[change]</div>
     |           </label>
+        else
+    |           <div class="profile-picture" for="file" style="background-image: url(#[[picture]]); display: flex; align-items: center;" id="profile-picture"></div>
+        end
     |           <input name="profile_csrf" id="profile_csrf" value="#[[to_url('/api/profile_picture', {user=session.logged.id, iv=true})]]" type="hidden">
     |           <input name="file" id="file" type="file" style="display: none" onchange="changeProfilePicture()">
     else

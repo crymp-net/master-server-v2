@@ -1,0 +1,78 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    if not session.logged then
+        status("302 Temporary redirect")
+        header("location", "/login")
+        return
+    else
+        local forum = await(crymp.web:getForum(session.logged.rights))
+        if not forum or iserror(forum) then
+            status("500 Internal server error")
+            | <h3>Server error</h3>
+            return
+        end
+    ```
+    <form method="post" action="#[[to_url('/create_thread', {user=session.logged.id})]]">
+        <label for="name">Name</label>
+        <br>
+        <input id="name" autocomplete="off" required aria-required="true" placeholder="Name of thread" class="nice-input no-margin full-input" name="name" value="">
+        <br>
+        <label for="subc">Subcategory</label>
+        <br>
+        <select id="subc" class="nice-input no-margin full-input" name="subcategoryId" required aria-required="true">
+    ```
+    local sid = tonumber(query.sid)
+    local selected = false
+    for _, category in ipairs(forum) do
+        if category.id > 0 then
+            | <optgroup label="#[[category.name]]">    
+            for i, subcategory in ipairs(category.subcategories) do
+                if (not sid and not selected) or (sid and subcategory.id == sid) then
+                    | <option value="#[[subcategory.id]]" selected="selected">#[[subcategory.name]]</option>
+                    selected = true
+                else
+                    | <option value="#[[subcategory.id]]">#[[subcategory.name]]</option>
+                end
+            end
+            | </optgroup>
+        end
+    end
+    ```
+        <br>
+        <label for="ta">Content</label>
+        <div class="tp">
+            <button onclick="put('quote'); return false;">quote</button>
+            <button onclick="put('b'); return false;">
+                <b>B</b>
+            </button>
+            <button onclick="put('i'); return false;">
+                <i>i</i>
+            </button>
+            <button onclick="put('u'); return false;">
+                <u>u</u>
+            </button>
+            <button onclick="put('small'); return false;">
+                <small>small</small>
+            </button>
+            <button onclick="put('h1'); return false;">
+                <b>H1</b>
+            </button>
+            <button onclick="put('h2'); return false;">
+                <b>H2</b>
+            </button>
+            <button onclick="put('h3'); return false;">
+                <b>H3</b>
+            </button>
+            <button onclick="put('code'); return false;">code</button>
+            <button onclick="put('img'); return false;">image</button>
+            <button onclick="put('yt'); return false;">youtube</button>
+        </div>
+        <textarea required aria-required="true" class="nice-input no-margin" style="width: 100%; height: 100px" placeholder="Insults are not allowed on this forum, please remember. Insulting posts can be removed and account even banned forever." id="ta" name="text"></textarea>
+        <input type="submit" name="submit" class="nice-button no-margin" value="Create thread" style="width: 100%">
+    </form>
+    ```
+    end
+?>
+</div>
+<?include footer.priv.html ?>

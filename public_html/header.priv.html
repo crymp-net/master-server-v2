@@ -53,7 +53,11 @@
                         | <li class="#[[endpoint == '/forum' and 'active' or '']]"><a href="/forum">Forum</a></li>
                     
                         if session.logged and endpoint == "/forum" then
-                            | <li><a href="/create_thread">+Create thread</a></li>
+                            if tonumber(query.sid) then
+                                | <li class="#[[endpoint == '/create_thread' and 'active' or '']]"><a href="/create_thread?sid=#[[query.sid]]">+Create thread</a></li>
+                            else
+                                | <li class="#[[endpoint == '/create_thread' and 'active' or '']]"><a href="/create_thread">+Create thread</a></li>
+                            end
                         end
                     ?>
                 </ul>

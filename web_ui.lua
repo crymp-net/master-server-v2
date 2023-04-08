@@ -109,7 +109,7 @@ function web:getForum(rights)
 end
 
 function web:getSubcategory(rights, subcategory_id)
-    return aio:cached("forum", "sub" .. rights, function()
+    return aio:cached("forum", tostring(rights) .. "_" .. tostring(subcategory_id), function()
         local resolve, resolver = aio:prepare_promise()
         db.subcategories.one:byId(subcategory_id)(function (subcategory)
             if not subcategory or iserror(subcategory) then
@@ -244,11 +244,56 @@ function web:getForumThread(id, rights, page, perPage)
     return resolver
 end
 
+--- Create forum thread with one post
+---@param user any requester user
+---@param subcategory_id integer subcategory ID
+---@param name string thread name
+---@param text string thread text
+---@return fun(on_resolved: fun(...: any)|thread)
+function web:createForumThread(user, subcategory_id, name, text)
+    local resolve, resolver = aio:prepare_promise()
+    db.subcategories.one:byId(subcategory_id)(function (subc)
+        if not subc or iserror(subc) then
+            resolve(subc)
+            return
+        end
+        if subc.rights > user.rights then
+            resolve({error = "unauthorized"})
+            return
+        end
+        db.threads:insert({
+            subc = subc.id,
+            name = name,
+            text = text,
+            author = user.id,
+            createdAt = os.time(),
+            hidden = 0,
+            encrypted = 0,
+        })(function (result)
+            if not result or iserror(result) then
+                resolve(result)
+                return
+            end
+            self:addForumThreadPost(user, result.last_insert_id, text)(function (postInsert)
+                if not postInsert or iserror(postInsert) then
+                    resolve(postInsert)
+                    return
+                end
+                resolve({
+                    thread = result.last_insert_id,
+                    postId = postInsert
+                })
+            end)
+        end)
+    end)
+    return resolver
+end
+
 --- Add forum post
 ---@param user {id: integer} user that is logged in
 ---@param thread_id integer thread ID
 ---@param text string post text
----@return orminsert 
+---@return fun(on_resolved: fun(result: integer|nil))
 function web:addForumThreadPost(user, thread_id, text)
     -- we can trust that user has access to given thread as otherwise signed query wouldn't fit
     local now = os.time()

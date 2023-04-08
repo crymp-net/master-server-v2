@@ -78,13 +78,15 @@ function crymp:getBorder()
 end
 
 function crymp:getServers(all)
-    all = all or false
-    local border = self:getBorder()
-    if all then
-        return Servers.all:byActiveAll(border, {orderBy="num_players DESC, rating DESC, is_real DESC"})
-    else
-        return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
-    end
+    return aio:cached("servers", tostring(all), function()
+        all = all or false
+        local border = self:getBorder()
+        if all then
+            return Servers.all:byActiveAll(border, {orderBy="num_players DESC, rating DESC, is_real DESC"})
+        else
+            return Servers.all:byActive(border, {orderBy="num_players DESC, rating DESC"})
+        end
+    end, 3)
 end
 
 function crymp:getServer(ip, port)

@@ -8,76 +8,78 @@ local web = {}
 ---@param rights integer requester user rights
 ---@return fun(on_resolved: fun(...: any)|thread)
 function web:getForum(rights)
-    local resolve, resolver = aio:prepare_promise()
-    local categoriesFuture = db.categories.all:by()
-    local subcategoriesFuture = db.subcategories.all:by()
-    local threadsFuture = db.threads.all:by({orderBy = "subc ASC, last_post_time DESC"})
-    local now = os.time()
-    local month = 90 * 86400
-    aio:gather(categoriesFuture, subcategoriesFuture, threadsFuture)(function (categories, subcategories, threads)
-        if not ispresent(categories, subcategories, threads) then
-            return resolve({})
-        else
-            local perCategory = {}
-            local subcategoryLU = {}
-            local userIds = {}
-            local postIds = {}
-            for _, subcategory in ipairs(subcategories) do
-                subcategory.threads = {}
-                subcategoryLU[subcategory.id] = subcategory
-                if subcategory.rights <= rights then
-                    perCategory[subcategory.main] = perCategory[subcategory.main] or {}
-                    table.insert(perCategory[subcategory.main], subcategory)
-                end
-            end
-                
-            for _, thread in ipairs(threads) do
-                local subcategory = subcategoryLU[thread.subc]
-                if subcategory ~= nil then
-                    local bucket = subcategory.threads
-                    if #bucket < 3 and (#bucket < 2 or (now - thread.lastPostTime) < month) then
-                        table.insert(bucket, thread)
-                        userIds[thread.author] = true
-                        table.insert(postIds, thread.lastPostId)
+    return aio:cached("forum", tostring(rights), function()
+        local resolve, resolver = aio:prepare_promise()
+        local categoriesFuture = db.categories.all:by()
+        local subcategoriesFuture = db.subcategories.all:by()
+        local threadsFuture = db.threads.all:by({orderBy = "subc ASC, last_post_time DESC"})
+        local now = os.time()
+        local month = 90 * 86400
+        aio:gather(categoriesFuture, subcategoriesFuture, threadsFuture)(function (categories, subcategories, threads)
+            if not ispresent(categories, subcategories, threads) then
+                return resolve({})
+            else
+                local perCategory = {}
+                local subcategoryLU = {}
+                local userIds = {}
+                local postIds = {}
+                for _, subcategory in ipairs(subcategories) do
+                    subcategory.threads = {}
+                    subcategoryLU[subcategory.id] = subcategory
+                    if subcategory.rights <= rights then
+                        perCategory[subcategory.main] = perCategory[subcategory.main] or {}
+                        table.insert(perCategory[subcategory.main], subcategory)
                     end
                 end
-            end
+                    
+                for _, thread in ipairs(threads) do
+                    local subcategory = subcategoryLU[thread.subc]
+                    if subcategory ~= nil then
+                        local bucket = subcategory.threads
+                        if #bucket < 3 and (#bucket < 2 or (now - thread.lastPostTime) < month) then
+                            table.insert(bucket, thread)
+                            userIds[thread.author] = true
+                            table.insert(postIds, thread.lastPostId)
+                        end
+                    end
+                end
 
-            db.posts.all:findAuthorByIdIn(postIds)(function (result)
-                if result and ispresent(result) then
-                    local postAuthors = {}
-                    for _, post in ipairs(result) do
-                        userIds[post.author] = true
-                        postAuthors[post.id] = post.author
-                    end
-                    db.users.all:byIdIn(keys(userIds))(function(result)
-                        if not result or not ispresent(result) then
-                            return resolve({})
+                db.posts.all:findAuthorByIdIn(postIds)(function (result)
+                    if result and ispresent(result) then
+                        local postAuthors = {}
+                        for _, post in ipairs(result) do
+                            userIds[post.author] = true
+                            postAuthors[post.id] = post.author
                         end
-                        local forum = {}
-                        users = {}
-                        for _, user in ipairs(result) do
-                            users[user.id] = user
-                        end
-                        for _, thread in ipairs(threads) do
-                            thread.author = users[thread.author] or DELETED_USER
-                            thread.lastPostBy = users[postAuthors[thread.lastPostId] or 0] or DELETED_USER
-                        end
-                        for _, category in ipairs(categories) do
-                            if category.rights <= rights then
-                                category.subcategories = perCategory[category.id] or {}
-                                table.insert(forum, category)
+                        db.users.all:byIdIn(keys(userIds))(function(result)
+                            if not result or not ispresent(result) then
+                                return resolve({})
                             end
-                        end
-                        resolve(forum)
-                    end)
-                else
-                    resolve({})
-                end
-            end)
-        end
-    end)
-    return resolver
+                            local forum = {}
+                            users = {}
+                            for _, user in ipairs(result) do
+                                users[user.id] = user
+                            end
+                            for _, thread in ipairs(threads) do
+                                thread.author = users[thread.author] or DELETED_USER
+                                thread.lastPostBy = users[postAuthors[thread.lastPostId] or 0] or DELETED_USER
+                            end
+                            for _, category in ipairs(categories) do
+                                if category.rights <= rights then
+                                    category.subcategories = perCategory[category.id] or {}
+                                    table.insert(forum, category)
+                                end
+                            end
+                            resolve(forum)
+                        end)
+                    else
+                        resolve({})
+                    end
+                end)
+            end
+        end)
+        return resolver
+    end, 5)
 end
 
 --- Get URL of user's profile picture

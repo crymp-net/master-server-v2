@@ -12,7 +12,7 @@
     end
     local user = await(crymp:getUser{id = result.id})
     if not user or iserror(user) then
-        | <ErrorMessage><error>failed to login</error></ErrorMessage>
+        | <ErrorMessage><error>failed to login, not a real user</error></ErrorMessage>
         return
     end
     ```

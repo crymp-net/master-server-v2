@@ -1,0 +1,45 @@
+<?include header.priv.html ?>
+<div class="container padd-16 content">
+<?lu
+    if not session.logged then
+        status("302 Temporary redirect")
+        header("location", "/login")
+        return
+    end
+    local labelClass = ""
+    if locals.error then
+        labelClass = "red"
+    end
+    ```
+    <h1>Account removal</h1>
+    <br>
+    <b>What will be deleted: </b>
+    <ul>
+        <li>Your profile information</li>
+        <li>Your statistics in global list</li>
+    </ul>
+    <b>What will not be deleted: </b>
+    <ul>
+        <li>Your posts on forum</li>
+        <li>Your created threads on forum</li>
+        <li>Your messages sent to other players</li>
+    </ul> All the things that will not be deleted are going to remain under "Unknown user" as author. <br>
+    <b>Please note that this action will be irreversible and all your earned statistics will be lost forever</b>
+    <br>
+    <br>
+    <form method="post" action="#[[to_url('/remove_profile', {user=session.logged.id, nickname=session.logged.nick})]]">
+        <label for="challenge" class="#[[labelClass]]">Type <u>#[[session.logged.nick]]</u> below to remove your profile</label>:<br>
+        <input type="text" class="nice-input" required aria-required="true" id="challenge" autocomplete="off" name="nickname">
+        <button class="nice-button">Remove my account</button>
+    </form>
+    ```
+    if locals.errors then
+        | <ul class="errors">
+        for _, err in ipairs(locals.errors) do
+            | <li>#[[err]]</li>
+        end
+        | </ul>
+    end
+    ?>
+</div>
+<?include footer.priv.html ?>

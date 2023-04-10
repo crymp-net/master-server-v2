@@ -289,3 +289,12 @@ return {
     statistics = statistics,
     likes = likes
 }
+
+
+--[[
+    first run:
+    alter table f_posts author int null;
+    alter table f_threads modify column author int null;
+    alter table f_threads drop foreign key FK1hl962ti503aua4gxryhveo6p;
+    alter table f_posts drop foreign key FKthjybsv6lkui9gflm469oyjl2;
+]]

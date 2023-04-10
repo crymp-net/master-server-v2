@@ -34,6 +34,7 @@ function web:getForum(rights)
                 end
                     
                 for _, thread in ipairs(threads) do
+                    thread.author = thread.author or 0
                     local subcategory = subcategoryLU[thread.subc]
                     if subcategory ~= nil then
                         local bucket = subcategory.threads
@@ -58,6 +59,7 @@ function web:getForum(rights)
                     if result and ispresent(result) then
                         local postAuthors = {}
                         for _, post in ipairs(result) do
+                            post.author = post.author or 0
                             userIds[post.author] = true
                             postAuthors[post.id] = post.author
                         end
@@ -128,6 +130,7 @@ function web:getSubcategory(rights, subcategory_id)
                 local userIds = {}
                 local posts = {}
                 for _, thread in ipairs(threads) do
+                    thread.author = thread.author or 0
                     table.insert(posts, thread.lastPostId)
                     userIds[thread.author] = false
                 end
@@ -138,6 +141,7 @@ function web:getSubcategory(rights, subcategory_id)
                     end
                     local postAuthors = {}
                     for _, post in ipairs(result) do
+                        post.author = post.author or 0
                         userIds[post.author] = false
                         postAuthors[post.id] = post.author
                     end
@@ -211,9 +215,11 @@ function web:getForumThread(id, rights, page, perPage)
             thread.page = page
             local viewable = {}
             local userIds = {}
+            thread.author = thread.author or 0
             userIds[thread.author] = true
             for i=1 + page*perPage, math.min(#posts, page*perPage + perPage) do
                 local post = posts[i]
+                post.author = post.author or 0
                 table.insert(viewable, post)
                 userIds[post.author] = true
             end
@@ -431,6 +437,9 @@ function web:updateProfile(user, params)
     return db.users:update(user, params)
 end
 
+--- Create a new account
+---@param params table request params
+---@return aiopromise<any>
 function web:signup(params)
     local resolve, resolver = aio:prepare_promise()
     local errors = {}
@@ -497,6 +506,37 @@ function web:signup(params)
         end)
     end)
 
+    return resolver
+end
+
+--- Remove user profile
+---@param user any requester user object
+function web:removeProfile(user)
+    local resolve, resolver = aio:prepare_promise()
+    local futures = {
+        db.posts.sql:exec("UPDATE f_posts SET author = NULL WHERE author = '%d'", user.id),
+        db.threads.sql:exec("UPDATE f_threads SET author = NULL WHERE author = '%d'", user.id),
+        db.likes.sql:exec("DELETE FROM likes WHERE user_id = '%d'", user.id)
+    }
+    aio:gather(unpack(futures))(function (a, b, c)
+        if a and b and c and not iserror(a) and not iserror(b) and not iserror(c) then
+            db.users.deleteOne:byId(user.id)(function (result)
+                if not result then
+                    resolve({error = "Database error/2"})
+                elseif iserror(result) then
+                    print("Failed to remove user: ", result.error)
+                    resolve({error = "Database error/3"})
+                else
+                    resolve(result)
+                end
+            end)
+        else
+            print(codec.json_encode(a))
+            print(codec.json_encode(b))
+            print(codec.json_encode(c))
+            resolve({error = "Database error"})
+        end
+    end)
     return resolver
 end
 

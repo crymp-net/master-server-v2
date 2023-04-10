@@ -1,0 +1,23 @@
+<?include shared.priv.html ?>
+<?lu
+    local params = aio:parse_query(body)
+    if session.logged and query.e and query.e.user and tonumber(query.e.user) == session.logged.id then
+        if params.nickname == session.logged.nick then
+            local ok = await(crymp.web:removeProfile(session.logged))
+            if not ok then
+                locals.errors = {"Database error"}
+            elseif iserror(ok) then
+                locals.errors = {ok.error}
+            else
+                status("302 Temporary redirect")
+                header("set-cookie", "pid=; HttpOnly")
+                return
+            end
+        else
+            locals.errors = {"Please, type your nickname in the field above"}
+        end
+    else
+        locals.errors = {"Invalid URL"}
+    end
+?>
+<?include remove_profile.html ?>

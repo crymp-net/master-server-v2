@@ -6,6 +6,9 @@
             if user then
                 session.logged = user
                 crymp:touch(user)
+            else
+                -- if user not found, force cookie removal
+                header("set-cookie", "pid=; HttpOnly")
             end
         end
     end

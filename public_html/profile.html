@@ -67,8 +67,8 @@
     | <h1>Basic info</h1>
     if isMe then
     | <div>
-    |    <strong>ID: </strong><strong>1</strong><br>
-    |    <strong>Nickname: </strong><strong>Zi</strong><br>
+    |    <strong>ID: </strong><strong>#[[session.logged.id]]</strong><br>
+    |    <strong>Nickname: </strong><strong>#[[session.logged.nick]]</strong><br>
     | </div>
     end
     if session.logged and session.logged.rights >= 4 then

@@ -104,6 +104,8 @@ local users = orm:create(sql, {
         id = { field = "id", type = orm.t.int },
         nick = { field = "nick", type = orm.t.varchar(100) },
         email = { field = "email", type = orm.t.varchar(128) },
+        uid = { field = "uID", type = orm.t.text },
+        password = { field = "password", type = orm.t.varchar(100) },
         display = { field = "display", type = orm.t.varchar(26) },
         rights = { field = "rights", type = orm.t.int },
         picture = { field = "photo", type=orm.t.varchar(256) },
@@ -117,7 +119,8 @@ local users = orm:create(sql, {
     findByIdIn = "WHERE id IN %s",
     findBy = true,
     findByEmail = true,
-    findByNick = true
+    findByNick = true,
+    findByEmailOrNick = "WHERE email = '%s' OR nick = '%s'"
 })
 
 local posts = orm:create(sql, {

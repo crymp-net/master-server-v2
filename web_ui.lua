@@ -431,6 +431,75 @@ function web:updateProfile(user, params)
     return db.users:update(user, params)
 end
 
+function web:signup(params)
+    local resolve, resolver = aio:prepare_promise()
+    local errors = {}
+    local required = {"password", "password2", "email", "nickname", "agree"}
+    for _, req in ipairs(required) do
+        if not params[req] or #(params[req]:gsub("^%s*", ""):gsub("%s$", "")) == 0 then
+            resolve({error = {"Fill out all fields"}})
+            return resolver
+        end
+    end
+    if params.password ~= params.password2 then
+        table.insert(errors, "Passwords do not match")
+    end
+    if #params.password < 7 then
+        table.insert(errors, "Password must be at least 7 characters long")
+    end
+    if params.password:match("^([a-zA-Z]+)$") then
+        table.insert(errors, "Password is too simple, use at least one non-alphabetical character")
+    end
+    if #params.nickname > 26 then
+        table.insert(errors, "Nickname must be shorter than 26 characters")
+    end
+    if not params.nickname:match("^([a-zA-Z0-9_]+)$") then
+        table.insert(errors, "Nickname must contain only alphabetical characters, digits or _")
+    end
+    if not params.email:match("^([a-zA-Z0-9_.]+)@([a-z0-9_]+)%.([a-z0-9.]+)$") then
+        table.insert(errors, "Invalid e-mail address")
+    end
+    if params.agree ~= "1" then
+        table.insert(errors, "You must agree with network rules")
+    end
+    if #errors > 0 then
+        resolve({error = errors})
+        return resolver
+    end
+    db.users.one:byEmailOrNick(params.email, params.nickname)(function (result)
+        if iserror(result) then
+            resolve({error = {"Database error"}})
+            return
+        elseif result then
+            resolve({error = {"User with same e-mail or nickname already exists"}})
+            return
+        end
+        db.users:insert({
+            nick = params.nickname,
+            email = params.email,
+            display = params.nickname,
+            uid = hash(crypto.random(32) .. params.nickname .. params.email),
+            rights = 1,
+            picture = "",
+            password = hash_password(params.password),
+            createdAt = os.time(),
+            lastSeen = os.time(),
+            motto = "",
+            agreed = 1,
+            loginAttempts = 0,
+            lastAttempt = os.date("*t")
+        })(function (result)
+            if not result or iserror(result) then
+                resolve({error = "Database error"})
+                return
+            end
+            resolve({id = result.last_insert_id})
+        end)
+    end)
+
+    return resolver
+end
+
 --- Encode forum post into HTML
 ---@param text string original text
 ---@return string text encoded as HTML

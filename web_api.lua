@@ -645,11 +645,11 @@ function api:updateDevReleases()
         local auth = "Authorization: token " .. GH_ACCESS_TOKEN
         aio:popen_read(ELFD, "curl", "--silent", "-H", auth, "https://api.github.com/repos/crymp-net/client-server/actions/artifacts")(function (contents)
             if not contents then
-                return resolve(make_error("failed to download releases from GitHub"))
+                return resolve(make_error("failed to download dev releases from GitHub"))
             end
             local releases = codec.json_decode(contents)
             if releases == nil or not releases.artifacts or #releases.artifacts < 1 then
-                return resolve(make_error("failed to parse releases from GitHub"))
+                return resolve(make_error("failed to parse dev releases from GitHub"))
             end
             local has32, has64 = false, false
             for _, artifact in ipairs(releases.artifacts) do

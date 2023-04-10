@@ -189,7 +189,7 @@ local categories = orm:create(sql, {
 
 local maps = orm:create(sql, {
     source = "map_repo_entry",
-    index = {"map_name", "version"},
+    index = {"mapName", "version"},
     --- @type ormentity
     entity = {
         mapName = { field = "map_name", type=orm.t.varchar(255) },

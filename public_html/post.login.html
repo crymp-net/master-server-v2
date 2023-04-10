@@ -8,9 +8,11 @@
             header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; HttpOnly")
             header("location", "/")
             return
+        elseif iserror(found) then
+            locals.errors = {found.error}
         end
     end
-    locals.errors = {"Invalid username or password"}
+    locals.errors = locals.errors or {"Invalid username or password"}
     locals.body = params
 ?>
 <?include login.html ?>

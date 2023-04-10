@@ -436,13 +436,29 @@ function api:login(user, password, strict)
         if not user or iserror(user) then
             resolve(nil)
         else
-            if hash_password(password) == user.password then
-                resolve(self:issueToken(user.id, os.time(), user.nick, user.display))
+            local delta = os.time() - os.time(user.lastAttempt)
+            local attempts = user.loginAttempts + 1
+            local result = nil
+            if user.loginAttempts >= 20 and delta < 1200 then
+                result = {error = "Too many failed attempts, retry again in 20 minutes"}
+            elseif user.loginAttempts >= 3 and delta < 60 then
+                result = {error = "Too many failed attempts, retry again in 1 minute"}
+            elseif hash_password(password) == user.password then
+                result = self:issueToken(user.id, os.time(), user.nick, user.display)
+                attempts = 0
             elseif not strict and password == hash_secu_login(user.email, user.password) then
-                resolve(self:issueToken(user.id, os.time(), user.nick, user.display))
+                result = self:issueToken(user.id, os.time(), user.nick, user.display)
+                attempts = 0
             else
-                resolve(nil)
+                result = {error = "Invalid username or password"}
             end
+            db.users:update(user, {loginAttempts = attempts, lastAttempt = os.date("*t")})(function (upResult)
+                if not upResult or iserror(upResult) then
+                    resolve({error = "database error"})
+                else
+                    resolve(result)
+                end
+            end)
         end
     end)
     return resolver

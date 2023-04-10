@@ -109,7 +109,9 @@ local users = orm:create(sql, {
         picture = { field = "photo", type=orm.t.varchar(256) },
         createdAt = { field = "date", type=orm.t.int },
         lastSeen = { field = "online", type=orm.t.int },
-        motto = { field="status", type=orm.t.varchar(1000) }
+        motto = { field="status", type=orm.t.varchar(1000) },
+        loginAttempts = {field="login_attempts", type=orm.t.int},
+        lastAttempt = {field="last_attempt", type=orm.t.datetime}
     },
     findById = true,
     findByIdIn = "WHERE id IN %s",

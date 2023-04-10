@@ -21,6 +21,7 @@ TOKEN_SALT = os.getenv("TOKEN_SALT") or "token-salt"
 STATIC_ID_SALT = os.getenv("STATIC_ID_SALT") or "static-id-salt"
 RELEASE_SALT = os.getenv("RELEASE_SALT") or "release-salt"
 PROXY_SECRET = os.getenv("PROXY_SECRET") or "proxy-secret"
+GH_ACCESS_TOKEN = os.getenv("GH_ACCESS_TOKEN") or "gh-access-token"
 
 function isodate(time)
     return os.date("!%Y-%m-%dT%T", time)

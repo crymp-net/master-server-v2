@@ -604,37 +604,96 @@ end
 --- Fetches information about latest release and corresponding ZIP files
 ---@return fun(on_resolved: fun(any)|thread)
 function api:updateReleases()
-    local resolve, resolver = aio:prepare_promise()
-    aio:popen_read(ELFD, "curl", "--silent", "https://api.github.com/repositories/213009308/releases")(function (contents)
-        if not contents then
-            return resolve(make_error("failed to download releases from GitHub"))
-        end
-        local releases = codec.json_decode(contents)
-        if releases == nil or #releases < 1 or #releases[1].assets < 1 then
-            return resolve(make_error("failed to parse releases from GitHub"))
-        end
-        local commit = releases[1].target_commitish
-        local asset = releases[1].assets[1]
-        local target_file = "/tmp/sfwcl_" .. commit .. ".zip"
-        local dest = "crymp/public_html/static/releases/" .. commit
-        local f, _ = io.open(dest .. "/CryMP-Client64.exe", "rb")
-        if f then
-            f:close()
-            self:getReleaseByCommit("release", commit)(resolve)
-        end
-        aio:popen_read(ELFD, "curl", "--silent", "-L", asset.browser_download_url, "--output", target_file)(function (contents)
-            if contents == nil then
-                return resolve(make_error("failed to download Zip from GitHub"))
+    return aio:cached("releases", "rel", function()
+        local resolve, resolver = aio:prepare_promise()
+        aio:popen_read(ELFD, "curl", "--silent", "https://api.github.com/repositories/213009308/releases")(function (contents)
+            if not contents then
+                return resolve(make_error("failed to download releases from GitHub"))
             end
-            aio:popen_read(ELFD, "unzip", target_file, "-d", dest)(function (contents)
-                if not contents or not contents:find("inflating") then
-                    return resolve({error = "failed to inflate zip"})
+            local releases = codec.json_decode(contents)
+            if releases == nil or #releases < 1 or #releases[1].assets < 1 then
+                return resolve(make_error("failed to parse releases from GitHub"))
+            end
+            local commit = releases[1].target_commitish
+            local asset = releases[1].assets[1]
+            local target_file = "/tmp/sfwcl_" .. commit .. ".zip"
+            local dest = "crymp/public_html/static/releases/" .. commit
+            local f, _ = io.open(dest .. "/CryMP-Client64.exe", "rb")
+            if f then
+                f:close()
+                return self:getReleaseByCommit("release", commit)(resolve)
+            end
+            aio:popen_read(ELFD, "curl", "--silent", "-L", asset.browser_download_url, "--output", target_file)(function (contents)
+                if contents == nil then
+                    return resolve(make_error("failed to download Zip from GitHub"))
                 end
-                self:updateReleaseByCommit("release", commit, dest)(resolve)
+                aio:popen_read(ELFD, "unzip", target_file, "-d", dest)(function (contents)
+                    if not contents or not contents:find("inflating") then
+                        return resolve(make_error("failed to inflate zip"))
+                    end
+                    self:updateReleaseByCommit("release", commit, dest)(resolve)
+                end)
             end)
         end)
-    end)
-    return resolver
+        return resolver
+    end, 5)
+end
+
+function api:updateDevReleases()
+    return aio:cached("releases", "dev", function()
+        local resolve, resolver = aio:prepare_promise()
+        local auth = "Authorization: token " .. GH_ACCESS_TOKEN
+        aio:popen_read(ELFD, "curl", "--silent", "-H", auth, "https://api.github.com/repos/crymp-net/client-server/actions/artifacts")(function (contents)
+            if not contents then
+                return resolve(make_error("failed to download releases from GitHub"))
+            end
+            local releases = codec.json_decode(contents)
+            if releases == nil or not releases.artifacts or #releases.artifacts < 1 then
+                return resolve(make_error("failed to parse releases from GitHub"))
+            end
+            local has32, has64 = false, false
+            for _, artifact in ipairs(releases.artifacts) do
+                if artifact.name:match("^(CryMP%-Client64).*$") then
+                    if not has32 or has32.workflow_run.head_sha == artifact.workflow_run.head_sha then
+                        has64 = artifact
+                    end
+                elseif artifact.name:match("^(CryMP%-Client32).*$") then
+                    if not has64 or has64.workflow_run.head_sha == artifact.workflow_run.head_sha then
+                        has32 = artifact
+                    end
+                end
+                if has64 and has32 then break end
+            end
+            if has64 and has32 then
+                local commit = has32.workflow_run.head_sha
+                local target_file = "/tmp/sfwcl_" .. commit
+                local dest = "crymp/public_html/static/releases/" .. commit
+                local f, _ = io.open(dest .. "/CryMP-Client64.exe", "rb")
+                if f then
+                    f:close()
+                    return self:getReleaseByCommit("release", commit)(resolve)
+                end
+                local get32 = aio:popen_read(ELFD, "curl", "--silent", "-L", "-H", auth, has32.archive_download_url, "--output", target_file .. "_32.zip")
+                local get64 = aio:popen_read(ELFD, "curl", "--silent", "-L", "-H", auth, has64.archive_download_url, "--output", target_file .. "_64.zip")
+                aio:gather(get32, get64)(function (res32, res64)
+                    if not res32 or not res64 then
+                        return resolve(make_error("downloading release ZIP failed"))
+                    end
+                    local unzip32 = aio:popen_read(ELFD, "unzip", target_file .. "_32.zip", "-d", dest)
+                    local unzip64 = aio:popen_read(ELFD, "unzip", target_file .. "_64.zip", "-d", dest)
+                    aio:gather(unzip32, unzip64)(function (contents32, contents64)
+                        if not contents32 or not contents32:find("inflating") or not contents64 or not contents64:find("inflating") then
+                            return resolve(make_error("failed to inflate zip"))
+                        end
+                        self:updateReleaseByCommit("dev", commit, dest)(resolve)
+                    end)
+                end)
+            else
+                resolve(make_error("failed to find pair of executables"))
+            end
+        end)
+        return resolver
+    end, 5)
 end
 
 return api

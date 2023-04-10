@@ -1,16 +1,18 @@
 <?include shared.priv.html ?>
 <?lu
     local params = aio:parse_query(body)
-    if params.password and params.email then
-        local found = await(crymp.api:login(params.email, params.password, true))
+    if params.password and params.email and params.nickname and params.password2 then
+        local found = await(crymp.web:signup(params))
         if found and not iserror(found) then
             status("302 Temporary redirect")
             header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; HttpOnly")
             header("location", "/")
             return
+        elseif iserror(found) then
+            locals.errors = found.error
         end
     end
-    locals.errors = {"Invalid username or password"}
+    locals.errors = locals.errors or {"Invalid values"}
     locals.body = params
 ?>
-<?include login.html ?>
+<?include signup.html ?>

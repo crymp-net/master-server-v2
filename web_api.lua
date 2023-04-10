@@ -409,18 +409,20 @@ end
 --- Perform user login on API endpoints
 ---@param user string nickname or email or ::tr:staticID
 ---@param password string password secured password or token for staticID
+---@param strict boolean|nil if true, only real users with real password are accepted
 ---@return aiopromise<table> ok
-function api:login(user, password)
+function api:login(user, password, strict)
+    strict = strict or false
     local resolve, resolver = aio:prepare_promise()
     local isEmail = user:match("(.-)@(.+)%.(.*)")
     local userFuture = nil
-    if isEmail then
+    if isEmail or strict then
         userFuture = db.users.one:byEmail(user)
     else
         userFuture = db.users.one:byNick(user)
     end
     -- if static ID is used
-    if user:match("^::tr:") then
+    if not strict and user:match("^::tr:") then
         local profileId = user:sub(6)
         local staticIdSign = self:staticIDToken(profileId)
         if password == staticIdSign then
@@ -436,7 +438,7 @@ function api:login(user, password)
         else
             if hash_password(password) == user.password then
                 resolve(self:issueToken(user.id, os.time(), user.nick, user.display))
-            elseif password == hash_secu_login(user.email, user.password) then
+            elseif not strict and password == hash_secu_login(user.email, user.password) then
                 resolve(self:issueToken(user.id, os.time(), user.nick, user.display))
             else
                 resolve(nil)

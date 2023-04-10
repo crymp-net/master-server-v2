@@ -1,18 +1,25 @@
 <?include header.priv.html ?>
 <div class="container padd-16 horizontal-center">
     <h1>Log-in</h1>
+    <?lu
+    locals.body = locals.body or {}
+    ```
     <form action="/login" method="post">
-        <input name="email" required aria-required="true" type="email" class="nice-input" placeholder="Your e-mail">
+        <input name="email" required aria-required="true" type="email" value="#[[locals.body.email or '']]" class="nice-input" placeholder="Your e-mail">
         <br>
         <input name="password" type="password" required aria-required="true" class="nice-input" placeholder="Your password">
         <br>
         <input type="submit" name="submit" class="nice-button" value="Log-in">
     </form>
     <p>Don't have an account yet? <a href="/signup">Sign-up</a></p>
-    <?lu
-        if query.errors then
-            -- do something
+    ```
+    if locals.errors then
+        | <ul class="errors">
+        for _, err in ipairs(locals.errors) do
+            | <li>#[[err]]</li>
         end
+        | </ul>
+    end
     ?>
 </div>
 <?include footer.priv.html ?>

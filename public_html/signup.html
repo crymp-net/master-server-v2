@@ -1,0 +1,61 @@
+<?include header.priv.html ?>
+<style>
+    .errinput {
+        border: 1px solid red !important;
+    }
+    .agree {
+        display: flex;
+        width: 320px;
+        max-width: 100%;
+        flex-direction: row;
+        margin: 0 auto;
+    }
+    label {
+        width: 320px;
+        display: block;
+        max-width: 100%;
+        margin: 0 auto;
+        text-align: left;
+        padding-left: 4px;
+    }
+</style>
+
+<div class="container padd-16 horizontal-center">
+    <h1>Log-in</h1>
+    <?lu 
+    locals.body = locals.body or {}
+    ```
+    <form action="/signup" method="post">
+        <label class="smart-label" for="nickname">Your nickname:</label>
+        <input id="nickname" value="#[[locals.body.nickname or '']]" type="text" autocomplete="off" class="nice-input" placeholder="Your nickname" name="nickname">
+        <br>
+
+        <label class="smart-label" for="email">Your e-mail:</label>
+        <input id="email" value="#[[locals.body.email or '']]" type="email" autocomplete="off" class="nice-input" placeholder="Your e-mail" name="email">
+        <br>
+
+        <label class="smart-label" for="password">Your password:</label>
+        <input name="password" value="" id="password" type="password" class="nice-input" placeholder="Your password">
+        <br>
+
+        <label class="smart-label" for="password2">Your password again:</label>
+        <input name="password2" value="" id="password2" type="password" class="nice-input" placeholder="Your password again">
+        <br>
+
+        <div class="agree" >
+            <input type="checkbox" value="1" name="agree" id="agree">
+            <label for="agree">I agree with <a href="/rules" target="_blank">network rules</a></label>
+        </div>
+        <input type="submit" name="submit" class="nice-button" value="Sign-up">
+    </form>
+    ```
+    if locals.errors then
+        | <ul class="errors">
+        for _, err in ipairs(locals.errors) do
+            | <li>#[[err]]</li>
+        end
+        | </ul>
+    end
+    ?>
+</div>
+<?include footer.priv.html ?>

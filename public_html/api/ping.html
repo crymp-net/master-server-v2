@@ -1,0 +1,13 @@
+<?lu
+    if query.ip and tonumber(query.port) and query.ip:match("^(%d+).(%d+).(%d+).(%d+)$") then
+        local ping = await(crymp.api:ping(query.ip, query.port))
+        header("content-type", "application/json")
+        if iserror(ping) then
+            write(ping)
+        else
+            write({rtt=ping})
+        end
+    else
+        status("400 Bad request")
+    end
+?>

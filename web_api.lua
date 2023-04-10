@@ -230,45 +230,61 @@ function api:upsertServer(params, source)
                     params.rating = existingServer.rating + (math.sqrt(params.numPlayers) * 0.0005 * ratio)
                 end
                 params.ratingUpdates = existingServer.ratingUpdates + 1
-                db.servers:update({ip=params.ip, port=params.port}, params)(function (result)
-                    if not result or result.error then
-                        print("update error: ", result.error)
-                        resolve(nil)
-                    else
-                        -- resolve right away, leave stats as background job
-                        resolve(existingServer.cookie)
-                        if params.source == "http" then
-                            self:updateStatistics(params, existingServer, timeDelta)(function (stats)
-                                if iserror(stats) then
-                                    print("failed to update player stats: ", stats.error)
-                                end
-                            end)
+
+                local performUpdate = function()
+                    db.servers:update({ip=params.ip, port=params.port}, params)(function (result)
+                        if not result or result.error then
+                            print("update error: ", result.error)
+                            resolve(nil)
+                        else
+                            -- resolve right away, leave stats as background job
+                            resolve(existingServer.cookie)
+                            if params.source == "http" then
+                                self:updateStatistics(params, existingServer, timeDelta)(function (stats)
+                                    if iserror(stats) then
+                                        print("failed to update player stats: ", stats.error)
+                                    end
+                                end)
+                            end
                         end
-                    end
-                end)
+                    end)
+                end
+
+                -- if server was reachable in past, no need to do this again
+                if existingServer.isReal then
+                    performUpdate()
+                else
+                    -- otherwise do ping and verify if it's reachable or not
+                    self:ping(params.ip, params.port)(function (reachable)
+                        params.isReal = type(reachable) == "number"
+                        performUpdate()
+                    end)
+                end
             else
-                params.isReal = false
-                params.players = params.players or ""
-                params.gamespyPlayers = params.gamespyPlayers or ""
-                if params.friendlyFire == nil then params.friendlyFire = false end
-                if params.antiCheat == nil then params.antiCheat = false end
-                if params.gamepadsOnly == nil then params.gamepadsOnly = false end
-                if params.dedicated == nil then params.dedicated = false end
-                if params.voiceChat == nil then params.voiceChat = false end
-                if params.dx10 == nil then params.dx10 = false end
-                params.activeTime = 30
-                params.uptime = 30
-                params.ratingUpdates = 0
-                params.rating = 0
-                params.peopleTime = params.numPlayers > 0 and params.activeTime or 0
-                params.cookie = codec.hex_encode(crypto.random(16))
-                db.servers:insert(params)(function (result)
-                    if result.error then
-                        print("insert error: ", result.error)
-                        resolve(nil)
-                    else
-                        resolve(params.cookie)
-                    end
+                self:ping(params.ip, params.port)(function (reachable)
+                    params.isReal = type(reachable) == "number"
+                    params.players = params.players or ""
+                    params.gamespyPlayers = params.gamespyPlayers or ""
+                    if params.friendlyFire == nil then params.friendlyFire = false end
+                    if params.antiCheat == nil then params.antiCheat = false end
+                    if params.gamepadsOnly == nil then params.gamepadsOnly = false end
+                    if params.dedicated == nil then params.dedicated = false end
+                    if params.voiceChat == nil then params.voiceChat = false end
+                    if params.dx10 == nil then params.dx10 = false end
+                    params.activeTime = 30
+                    params.uptime = 30
+                    params.ratingUpdates = 0
+                    params.rating = 0
+                    params.peopleTime = params.numPlayers > 0 and params.activeTime or 0
+                    params.cookie = codec.hex_encode(crypto.random(16))
+                    db.servers:insert(params)(function (result)
+                        if result.error then
+                            print("insert error: ", result.error)
+                            resolve(nil)
+                        else
+                            resolve(params.cookie)
+                        end
+                    end)
                 end)
             end
         end
@@ -598,6 +614,22 @@ function api:getReleaseByCommit(release_type, commit)
         end
     end)
     return resolver
+end
+
+function api:ping(ip, port)
+    return aio:cached("ping", ip .. ":" .. port, function ()
+        local resolve, resolver = aio:prepare_promise()
+        aio:popen_read(ELFD, "./gsemu/bin/ping", ip, port)(function (contents)
+            if not contents then
+                return resolve(make_error("failed to launch ping"))
+            end
+            if tonumber(contents) < 0 then
+                return resolve(make_error("server unreachable"))
+            end
+            resolve(tonumber(contents))
+        end)
+        return resolver
+    end, 5)
 end
 
 --- Update current release based on GitHub API

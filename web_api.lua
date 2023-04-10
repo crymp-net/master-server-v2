@@ -468,7 +468,7 @@ end
 ---@param profileId string|number
 ---@return string signed token
 function api:staticIDToken(profileId)
-    return codec.hex_encode(crypto.sha1(crypto.hmac_sha256(tostring(profileId), STATIC_ID_SALT)))
+    return codec.hex_encode(crypto.sha1(codec.hex_encode(crypto.hmac_sha256(tostring(profileId), STATIC_ID_SALT))))
 end
 
 --- Get or create static ID
@@ -483,7 +483,7 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
         if iserror(result) then
             resolve(nil)
         elseif result ~= nil then
-            local profileId = tostring(result.id + 1000000)
+            local profileId = string.format("%d", result.id + 1000000)
             db.staticIds:update({id = result.id}, {
                 lastLaunch = os.time(),
                 launches = result.launches + 1,

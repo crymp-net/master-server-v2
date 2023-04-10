@@ -11,6 +11,7 @@
             else
                 status("302 Temporary redirect")
                 header("set-cookie", "pid=; HttpOnly")
+                header("location", "/servers")
                 return
             end
         else

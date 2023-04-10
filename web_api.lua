@@ -23,6 +23,7 @@ local standard_maps = {
 function api:toServerUpdate(query, ip, port, source)
     source = source or "http"
     port = port or 64087
+    query.players = query.players or ""
     local ok = true
     local behindProxy = false
     local required = {
@@ -216,6 +217,9 @@ function api:upsertServer(params, source)
             if existingServer then
                 local timeDelta = os.time() - os.time(existingServer.lastUpdated)
                 local ratio = timeDelta / 30
+                if params.maxPlayers == 0 then
+                    params.maxPlayers = existingServer.maxPlayers or 32
+                end
                 params.uptime = existingServer.uptime + timeDelta
                 params.activeTime = existingServer.activeTime + (params.numPlayers > 0 and timeDelta or 0)
                 params.peopleTime = existingServer.peopleTime + params.numPlayers * timeDelta

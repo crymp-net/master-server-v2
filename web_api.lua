@@ -217,8 +217,12 @@ function api:upsertServer(params, source)
             if existingServer then
                 local timeDelta = os.time() - os.time(existingServer.lastUpdated)
                 local ratio = timeDelta / 30
+                local needsFullGSUpdate = false
                 if params.maxPlayers == 0 then
+                    needsFullGSUpdate = params.source ~= "http" and params.maxPlayers ~= existingServer.maxPlayers
                     params.maxPlayers = existingServer.maxPlayers or 32
+                elseif existingServer.source ~= "http" and params.source ~= "http" then
+                    needsFullGSUpdate = true
                 end
                 params.uptime = existingServer.uptime + timeDelta
                 params.activeTime = existingServer.activeTime + (params.numPlayers > 0 and timeDelta or 0)
@@ -230,6 +234,16 @@ function api:upsertServer(params, source)
                     params.rating = existingServer.rating + (math.sqrt(params.numPlayers) * 0.0005 * ratio)
                 end
                 params.ratingUpdates = existingServer.ratingUpdates + 1
+
+                if params.source ~= "http" and not needsFullGSUpdate then
+                    params.rating = nil
+                    params.ratingUpdates = nil
+                    params.uptime = nil
+                    params.activeTime = nil
+                    params.peopleTime = nil
+                    params.numPlayers = nil
+                    params.map = nil
+                end
 
                 local performUpdate = function()
                     db.servers:update({ip=params.ip, port=params.port}, params)(function (result)

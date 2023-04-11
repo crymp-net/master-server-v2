@@ -201,11 +201,11 @@ end
 --- Insert or update a server
 ---@param params server_object server update
 ---@return aiopromise<string|nil>
-function api:upsertServer(params, source)
+function api:upsertServer(params)
     local resolve, resolver = aio:prepare_promise()
     local serverFuture = db.servers.one:byIpPort(params.ip, params.port)
     local mapFuture = self:upsertMap(params)
-    params.source = source or "http"
+    params.source = params.source or "http"
 
     aio:gather(serverFuture, mapFuture)(function (existingServer, existingMap)
         if existingServer and existingServer.error then

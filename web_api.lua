@@ -517,6 +517,7 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
                 clientVersion = clientVer or "18",
                 locale = locale or "en-US",
                 tz = tz or 0,
+                launches = 1,
                 lastLaunch = os.time()
             })(function (result)
                 if iserror(result) then

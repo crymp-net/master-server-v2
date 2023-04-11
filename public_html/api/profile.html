@@ -2,14 +2,17 @@
     local handle, pass = query.a, query.b
     header("content-type", "text/xml")
     if not handle or not pass or #handle == 0 or #pass == 0 then
+        status("400 Bad request")
         | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
     else
         local auth = await(crymp.api:login(handle, pass))
         if not auth or iserror(auth) then
+            status("401 Unauthorized")
             | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
         else
             local user = await(crymp:getUser{id = tonumber(auth.id)})
             if not user or iserror(user) then
+                status("401 Unauthorized")
                 | <ErrorMessage><error>invalid username or password</error></ErrorMessage>
                 return
             end

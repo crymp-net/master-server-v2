@@ -1,1 +1,1 @@
-<?lu locals.encode = codec.lua_encode ?>function dataret() return <?include server.html ?> end
+<?lu locals.encode = codec.lua_encode; locals.legacy = true ?>function dataret() return <?include server.html ?> end

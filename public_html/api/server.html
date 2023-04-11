@@ -12,7 +12,9 @@
             write(encode({error = "not available"}))
         else
             local ip = aio:get_ip(fd)
-            write(encode(crymp.api.toPublic(server, ip)))
+            local response = crymp.api.toPublic(server, ip)
+            if locals.legacy then response = {response} end
+            write(encode(response))
         end
     else
         status("400 Bad request")

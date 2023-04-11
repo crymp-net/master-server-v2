@@ -1,1 +1,31 @@
-<?lu locals.encode = codec.json_encode ?><?include idsvc.php ?>
+<?lu
+    local function encode(locals, result)
+        if locals.legacy then
+            return result.error and "900000/KICKME" or result.id .. "/" .. result.token
+        end
+        header("content-type", "application/json; charset=utf-8")
+        return codec.json_encode(result)
+    end
+    local hwid = query.hwid or headers["x-sfwcl-hwid"]
+    if not hwid or not hwid:find(":") then
+        status("400 Bad request")
+        return write(encode(locals, {error="invalid hwid/1"}))
+    end
+    local locale = query.lng or query.locale or headers["x-sfwcl-locale"] or "en-US"
+    local tz = tonumber(query.tz or headers["x-sfwcl-tz"]) or 0
+    local clientVer = query.ver or headers["x-sfwcl-ver"] or "17"
+    local id, signature = hwid:match("([0-9A-Fa-f]+):([0-9A-Fa-f]+)")
+    if id and signature and #id == 64 and #signature == 64 and hash(id .. "idsvc"):lower() == signature:lower() then
+        local result = await(crymp.api:getStaticID(id, locale, tz, clientVer))
+        if not result then
+            status("500 Internal server error")
+            return write(encode(locals, {error="server error"}))
+        else
+            if iserror(result) then status("401 Unauthorized") end
+            return write(encode(locals, result))
+        end
+    else
+        status("400 Bad request")
+        return write(encode(locals, {error="invalid hwid/2"}))
+    end
+?>

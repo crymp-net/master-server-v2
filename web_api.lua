@@ -242,7 +242,11 @@ function api:upsertServer(params, source)
                             if params.source == "http" then
                                 self:updateStatistics(params, existingServer, timeDelta)(function (stats)
                                     if iserror(stats) then
-                                        print("failed to update player stats: ", stats.error)
+                                        print("failed to update player stats: ", stats.error, "data: ", codec.json_encode({
+                                            params = params,
+                                            existingServer = existingMap,
+                                            timeDelta = timeDelta
+                                        }))
                                     end
                                 end)
                             end

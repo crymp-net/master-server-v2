@@ -336,7 +336,7 @@ function api:updateStatistics(server, before, delta)
         resolve({updates = 0})
     else
         for _, player in ipairs(historic) do
-            if (player.profile_id >= 1 and player.profile_id > 800000) or player.profile_id > 1000000 then
+            if (player.profile_id >= 1 and player.profile_id < 800000) or player.profile_id > 1000000 then
                 ids[player.profile_id] = player
             end
         end
@@ -359,7 +359,7 @@ function api:updateStatistics(server, before, delta)
                 if diff.kills < 0 then diff.kills = 0 end
                 if diff.deaths < 0 then diff.deaths = 0 end
                 deltas[player.profile_id] = diff
-            elseif (player.profile_id >= 1 and player.profile_id > 800000) or player.profile_id > 1000000 then
+            elseif (player.profile_id >= 1 and player.profile_id < 800000) or player.profile_id > 1000000 then
                 deltas[player.profile_id] = {
                     ip = server.ip,
                     port = server.port,
@@ -372,7 +372,12 @@ function api:updateStatistics(server, before, delta)
                 ids[player.profile_id] = player
             end
         end
-        db.statistics.all:byIpPortPlayerIds(server.ip, server.port, keys(ids))(function (current)
+        local allIds = keys(ids)
+        if #allIds == 0 then
+            resolve({ok = true})
+            return resolver
+        end
+        db.statistics.all:byIpPortPlayerIds(server.ip, server.port, allIds)(function (current)
             if current and iserror(current) then
                 resolve({error = "failed to update stats: " .. current.error})
             elseif current then

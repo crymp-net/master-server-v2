@@ -285,9 +285,6 @@ function api:upsertServer(params)
                 end
                 params.ratingUpdates = existingServer.ratingUpdates + 1
 
-                if params.source ~= "http" then
-                    print("GS: ", needsFullGSUpdate, codec.json_encode(params))
-                end
                 if params.source ~= "http" and not needsFullGSUpdate then
                     -- if server already has SSM, let GS update only these
                     params = {

@@ -291,6 +291,8 @@ function api:upsertServer(params)
                 if params.source ~= "http" and not needsFullGSUpdate then
                     -- if server already has SSM, let GS update only these
                     params = {
+                        ip = params.ip,
+                        port = params.port,
                         mapName = params.mapName,
                         gamespyPlayers = params.gamespyPlayers,
                         gamespyPort = params.gamespyPort,

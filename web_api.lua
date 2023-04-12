@@ -270,7 +270,8 @@ function api:upsertServer(params)
                 if params.maxPlayers == 0 then
                     needsFullGSUpdate = params.source ~= "http" and params.maxPlayers ~= existingServer.maxPlayers
                     params.maxPlayers = existingServer.maxPlayers or 32
-                elseif existingServer.source ~= "http" and params.source ~= "http" then
+                end
+                if existingServer.source ~= "http" and params.source ~= "http" then
                     needsFullGSUpdate = true
                 end
                 params.uptime = existingServer.uptime + timeDelta
@@ -284,6 +285,9 @@ function api:upsertServer(params)
                 end
                 params.ratingUpdates = existingServer.ratingUpdates + 1
 
+                if params.source ~= "http" then
+                    print("GS: ", needsFullGSUpdate, codec.json_encode(params))
+                end
                 if params.source ~= "http" and not needsFullGSUpdate then
                     -- if server already has SSM, let GS update only these
                     params = {

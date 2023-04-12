@@ -186,7 +186,7 @@ function api:guessMapName(map)
     local name = map:match("^multiplayer/[a-z]+/(.+)$")
     if not name then return "Mesa" end
     local parts = {}
-    for part in name:gmatch("([^_]+)") do
+    for part in name:gmatch("([^_%-]+)") do
         if #part <= 2 then
             table.insert(parts, part)
         else

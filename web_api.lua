@@ -217,7 +217,7 @@ function api:upsertMap(params)
         resolve("")
         return resolver
     end
-    local mapFuture = db.maps.one:bymapPathVersion(mapPath, version)
+    local mapFuture = db.maps.one:byMapNameVersion(mapPath, version)
     mapFuture(function (result)
         if result and result.error then
             resolve(url)

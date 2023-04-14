@@ -86,6 +86,28 @@
         |       </div>
         |   </div>
         end
+        | </div>
+
+        ```
+        <div class="nice-table serverlist hidden-lg hidden-md">
+            <div class="row header">
+                <div class="col-xs-9 col-sm-6">Server name</div>
+                <div class="col-xs-3 col-sm-2">Players</div>
+                <div class="hidden-xs col-sm-4">Map</div>
+            </div>
+        ```
+        for i, server in ipairs(servers) do
+            ```
+            <div class="row normal serveritem">
+                <div class="col-xs-9 col-sm-6">
+                    <a href="#[[to_url('/server', {ip=server.ip, port=server.port})]]">#[[(server.password or "0") == "0" and "🔐 " or ""]]#[[server.name or "No name"]]</a>
+                </div>
+                <div class="col-xs-3 col-sm-2">#[[server.numPlayers or 0:d]]/#[[server.maxPlayers or 32:d]]</div>
+                <div class="col-sm-4 hidden-xs" th:text="${server.mapName}">#[[server.mapName]]</div>
+            </div>
+            ```
+        end
+        | </div>
     end
 ?>
 </div>

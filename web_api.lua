@@ -256,6 +256,12 @@ function api:upsertServer(params)
     local mapFuture = self:upsertMap(params)
     params.source = params.source or "http"
 
+    crymp:record_stat(params.source == "http" and "serverUpdates" or "gsServerUpdates", 1)
+    
+    crymp:getActivePlayers()(function(count)
+        crymp:record_stat("playersOnline", count)
+    end)
+
     aio:gather(serverFuture, mapFuture)(function (existingServer, existingMap)
         if existingServer and existingServer.error then
             print("get error: ", existingServer.error)
@@ -484,6 +490,7 @@ end
 ---@param token string provided token
 ---@return boolean ok true if token is ok
 function api:validateToken(profileId, token)
+    crymp:record_stat("validations", 1)
     local signature, time = token:match("(.-)_(%d+)")
     local validityPeriod = 3600 * 4
     if signature and time then
@@ -512,6 +519,9 @@ end
 ---@return aiopromise<table> ok
 function api:login(user, password, strict)
     strict = strict or false
+    if not strict then
+        crymp:record_stat("logins", 1)
+    end
     local resolve, resolver = aio:prepare_promise()
     local isEmail = user:match("(.-)@(.+)%.(.*)")
     local userFuture = nil

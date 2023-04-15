@@ -6,7 +6,33 @@ local web_api = loadfile("crymp/web_api.lua")()
 
 crymp = {
     web = web_ui,
-    api = web_api
+    api = web_api,
+    stats = {
+        apiLatency = {total = 0, count = 0},
+        wwwLatency = {total = 0, count = 0},
+        playersOnline = {total = 0, count = 0},
+        logins = {total = 0, count = 0},
+        validations = {total = 0, count = 0},
+        serverUpdates = {total = 0, count = 0},
+        gsServerUpdates = {total = 0, count = 0}
+    },
+    record_stat = function(self, key, value)
+        if self.stats[key] then
+            self.stats[key].total = self.stats[key].total + value
+            self.stats[key].count = self.stats[key].count + 1
+        end
+    end,
+    collect_stats = function(self)
+        for i, v in pairs(self.stats) do
+            self.stats[i].average = self.stats[i].total / math.max(1, self.stats[i].count)
+        end
+        return self.stats
+    end,
+    reset_stats = function(self)
+        for i, v in pairs(self.stats) do
+            self.stats[i] = {total = 0, count = 0}
+        end
+    end
 }
 Servers = db.servers
 Users = db.users
@@ -55,6 +81,19 @@ function keys(dict)
     local k = {}
     for i, _ in pairs(dict) do table.insert(k, i) end
     return k
+end
+
+function on_before_http(method, endpoint, session)
+    session.http_start = net.clock()
+end
+
+function on_after_http(method, endpoint, session)
+    local latency = net.clock() - session.http_start
+    if endpoint:match("^/api/") then
+        crymp:record_stat("apiLatency", latency)
+    else
+        crymp:record_stat("wwwLatency", latency)
+    end
 end
 
 --- Get border timestamp for getting servers

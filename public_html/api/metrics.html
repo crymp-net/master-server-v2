@@ -1,0 +1,8 @@
+<?lu
+    local result = codec.json_encode(crymp:collect_stats())
+    if query.reset and query.reset == "true" then
+        crymp:reset_stats()
+    end
+    header("content-type", "application/json")
+    write(result)
+?>

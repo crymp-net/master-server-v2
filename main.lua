@@ -207,7 +207,9 @@ end
 ---@return aiopromise<{kills: integer, deaths: integer, playedTime: integer}>|nil
 function crymp:getStatistics(params)
     if params.profileId then
-        return db.statistics.one:byUser(params.profileId)
+        return aio:cached("stats", params.profileId, function ()
+            return db.statistics.one:byUser(params.profileId)
+        end)
     end
 end
 
@@ -220,7 +222,7 @@ function crymp:getActivePlayers()
             if not result or iserror(result) then
                 resolve(0)
             else
-                resolve(tonumber(result.total_players))
+                resolve(tonumber(result.total_players or 0))
             end
         end)
         return on_resolved

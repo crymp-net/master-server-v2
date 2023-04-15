@@ -21,7 +21,7 @@
     local thread = query.id or nil
     local rights = session.logged and session.logged.rights or 1
     if thread then
-        thread = await(crymp.web:getForumThread(thread, rights, query.page or 0, 10))
+        thread = await(crymp.web:getForumThread(thread, rights, tonumber(query.page) or -1, 10))
     end
     if not thread then
         | <h1>Invalid thread</h1>

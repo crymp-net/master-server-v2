@@ -20,9 +20,9 @@
             local token = hash_secu_login(user.email, user.password)
             ```
             <AccountInfo>
-                <kills>#[[stats.kills]]</kills>
-                <deaths>#[[stats.deaths]]</deaths>
-                <playedTime>#[[stats.playedTime]]</playedTime>
+                <kills>#[[stats.kills or 0]]</kills>
+                <deaths>#[[stats.deaths or 0]]</deaths>
+                <playedTime>#[[stats.playedTime or 0]]</playedTime>
                 <profileId>#[[user.id]]</profileId>
                 <master>crymp.net</master>
                 <display>#[[user.display]]</display>

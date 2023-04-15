@@ -21,8 +21,8 @@ crymp = {
             self.stats[key].total = self.stats[key].total + value
             self.stats[key].count = self.stats[key].count + 1
             -- if we get too many medians, remove one to keep it at 5k max
-            if #self.stats[i].medians == 5000 then
-                table.remove(self.stats[i].medians, 1)
+            if #self.stats[key].medians == 5000 then
+                table.remove(self.stats[key].medians, 1)
             end
             table.insert(self.stats[key].medians, value)
         end

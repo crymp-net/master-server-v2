@@ -88,7 +88,7 @@ function on_before_http(method, endpoint, session)
 end
 
 function on_after_http(method, endpoint, session)
-    local latency = net.clock() - session.http_start
+    local latency = (net.clock() - session.http_start) * 1000 -- must be in ms
     if endpoint:match("^/api/") then
         crymp:record_stat("apiLatency", latency)
     else

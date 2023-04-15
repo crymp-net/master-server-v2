@@ -115,7 +115,7 @@ end
 --- Get border timestamp for getting servers
 ---@return string
 function crymp:getBorder()
-    return orm.t.datetime.toformat(os.time() - 86400 * 365)
+    return orm.t.datetime.toformat(os.time() - 240)
 end
 
 --- Get list of servers

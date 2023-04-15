@@ -89,7 +89,7 @@ function api:toServerUpdate(query, ip, port, source)
         map = query["map"] ~= nil and query["map"]:lower() or nil,
         mapName = query["mapnm"],
         mapDownloadLink = query["mapdl"],
-        password = self:decodePasswordValue(query["pass"]),
+        password = self:decodePasswordValue(query["pass"]) and "1" or "0",
         ranked = (query["ranked"] or "0") == "1",
         gameVersion = tonumber(query["ver"] or "6156"),
         localIp = query["local"],

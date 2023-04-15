@@ -239,6 +239,13 @@ optgroup {
     background-color: #1a1f21 !important
 }
 
+code {
+    display: block;
+    background-color: black;
+    font-family: 'Courier New', Courier, monospace;
+    color: orange
+}
+
 @media (min-width:1199px) {
     body {
         background: url(/static/images/crymp_bgbg.png) repeat-x fixed center 0 #161b1d;

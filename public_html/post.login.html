@@ -5,7 +5,7 @@
         local found = await(crymp.api:login(params.email, params.password, true))
         if found and not iserror(found) then
             status("302 Temporary redirect")
-            header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; HttpOnly")
+            header("set-cookie", "pid=" .. aio:encrypt(tostring(found.id), aio:create_key("/session")) .. "; max-age=31536000; HttpOnly")
             header("location", "/")
             return
         elseif iserror(found) then

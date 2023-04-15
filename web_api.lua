@@ -285,7 +285,7 @@ function api:upsertServer(params)
                 params.peopleTime = existingServer.peopleTime + params.numPlayers * timeDelta
                 params.rating = existingServer.rating or 0
                 if params.numPlayers <= 0 then
-                    params.rating = existingServer.rating / math.max(1.0001, (1 + 0.0005 * ratio))
+                    params.rating = existingServer.rating / math.max(1.0001, (1 + 0.0007 * ratio))
                 else
                     params.rating = existingServer.rating + (math.sqrt(params.numPlayers) * 0.0005 * ratio)
                 end

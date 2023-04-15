@@ -8,29 +8,41 @@ crymp = {
     web = web_ui,
     api = web_api,
     stats = {
-        apiLatency = {total = 0, count = 0},
-        wwwLatency = {total = 0, count = 0},
-        playersOnline = {total = 0, count = 0},
-        logins = {total = 0, count = 0},
-        validations = {total = 0, count = 0},
-        serverUpdates = {total = 0, count = 0},
-        gsServerUpdates = {total = 0, count = 0}
+        apiLatency = {total = 0, count = 0, medians = {}},
+        wwwLatency = {total = 0, count = 0, medians = {}},
+        playersOnline = {total = 0, count = 0, medians = {}},
+        logins = {total = 0, count = 0, medians = {}},
+        validations = {total = 0, count = 0, medians = {}},
+        serverUpdates = {total = 0, count = 0, medians = {}},
+        gsServerUpdates = {total = 0, count = 0, medians = {}}
     },
     record_stat = function(self, key, value)
         if self.stats[key] then
             self.stats[key].total = self.stats[key].total + value
             self.stats[key].count = self.stats[key].count + 1
+            table.insert(self.stats[key].medians, value)
         end
     end,
     collect_stats = function(self)
         for i, v in pairs(self.stats) do
             self.stats[i].average = self.stats[i].total / math.max(1, self.stats[i].count)
+            table.sort(self.stats[i].medians)
+            local median = 0
+            local n = #self.stats[i].medians
+            if n > 0 then
+                if n % 2 == 0 then
+                    median = (self.stats[i].medians[math.floor(n / 2)] + self.stats[i].medians[math.floor(n / 2 + 1)]) / 2
+                else
+                    median = self.stats[i].medians[math.floor((n - 1) / 2)]
+                end
+            end
+            self.stats[i].median = median
         end
         return self.stats
     end,
     reset_stats = function(self)
         for i, v in pairs(self.stats) do
-            self.stats[i] = {total = 0, count = 0}
+            self.stats[i] = {total = 0, count = 0, medians={}}
         end
     end
 }

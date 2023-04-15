@@ -1,4 +1,4 @@
-# CryMP master server -website and API source code
+# CryMP master server: website and API source code
 
 This repository contains source code for both API (`/api/...`) endpoints and UI of [CryMP.net](https://crymp.net/)
 
@@ -10,8 +10,9 @@ Prerequisites:
 - [80s](https://github.com/diznq/80s)
 - MySQL set-up with native_password for authentication (MariaDB has it as default)
 - for running locally, Linux / FreeBSD / macOS or WSL (plain Windows will be supported one day in future)
+- optional: [gamespy-emulator](https://github.com/crymp-net/gamespy-emulator) built in `gsemu` directory
 
-*Example directory hierarchy initialization*
+**Example directory hierarchy initialization**
 
 ```sh
 # download, build and install Lua 5.4.4

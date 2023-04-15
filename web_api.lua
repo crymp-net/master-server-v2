@@ -321,7 +321,7 @@ function api:upsertServer(params)
                             resolve(existingServer.cookie)
                             if params.source == "http" then
                                 self:updateStatistics(params, existingServer, timeDelta)(function (stats)
-                                    if iserror(stats) then
+                                    if iserror(stats) and not stats.old then
                                         print("failed to update player stats: ", stats.error, "data: ", codec.json_encode({
                                             params = params,
                                             existingServer = existingMap,
@@ -405,7 +405,7 @@ end
 function api:updateStatistics(server, before, delta)
     local resolve, resolver = aio:prepare_promise()
     if delta > 180 then
-        resolve({error = "too late to update statistics, delta: " .. delta})
+        resolve({error = "too late to update statistics, delta: " .. delta, old = true})
         return resolver
     end
     local ids = {}

@@ -26,6 +26,10 @@ crymp = {
     collect_stats = function(self)
         for i, v in pairs(self.stats) do
             self.stats[i].average = self.stats[i].total / math.max(1, self.stats[i].count)
+            -- if we get too many medians, remove one to keep it at 5k max
+            if #self.stats[i].medians == 5000 then
+                table.remove(self.stats[i].medians, 1)
+            end
             table.sort(self.stats[i].medians)
             local median = 0
             local n = #self.stats[i].medians

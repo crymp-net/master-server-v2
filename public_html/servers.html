@@ -38,7 +38,7 @@
     end
 
     local function write_server_players(server)
-        local players = crymp:exportPlayers(server.players)
+        local players = crymp:exportPlayers(server.source == "http" and server.players or server.gamespyPlayers)
         | <div class="players-list cell">
         |    <table>
         |        <tr>

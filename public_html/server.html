@@ -52,7 +52,7 @@
                     </div>
                 </div>
             ```
-            local players = crymp:exportPlayers(server.players)
+            local players = crymp:exportPlayers(server.source == "http" and server.players or server.gamespyPlayers)
             table.sort(players, function(a, b)
                 if a.rank ~= b.rank then
                     return a.rank > b.rank

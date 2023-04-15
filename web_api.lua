@@ -46,6 +46,12 @@ for i, v in pairs(standard_maps) do
     known_maps[i] = v
 end
 
+function api:decodePasswordValue(value)
+    if value == nil then return false end
+    if value == "true" then return true end
+    return (tonumber(value) or 0) > 0
+end
+
 --- Convert query parameters to server update
 ---@param query any
 ---@param ip string
@@ -56,6 +62,7 @@ function api:toServerUpdate(query, ip, port, source)
     port = port or 64087
     query.players = query.players or ""
     local ok = true
+    local nPlayers = #crymp:exportPlayers(query.players)
     local behindProxy = false
     local required = {
         "timeLeft", "name", "numPlayers", "maxPlayers", "map", "port", "ip"
@@ -76,13 +83,13 @@ function api:toServerUpdate(query, ip, port, source)
         name = query["name"],
         players = source == "http" and query["players"] or nil,
         gamespyPlayers = source == "gamespy" and query["players"] or nil,
-        numPlayers = tonumber(query["numpl"]),
+        numPlayers = nPlayers or 0,
         maxPlayers = tonumber(query["maxpl"] or "0"),
         pak = query["pak"],
         map = query["map"] ~= nil and query["map"]:lower() or nil,
         mapName = query["mapnm"],
         mapDownloadLink = query["mapdl"],
-        password = query["pass"] or "0",
+        password = self:decodePasswordValue(query["pass"]),
         ranked = (query["ranked"] or "0") == "1",
         gameVersion = tonumber(query["ver"] or "6156"),
         localIp = query["local"],

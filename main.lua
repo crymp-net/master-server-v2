@@ -6,9 +6,23 @@ local web_api = loadfile("crymp/web_api.lua")()
 
 aio:set_max_cache_size(100000)
 
+local prev_stats = nil
+if crymp then
+    prev_stats = crymp.stats
+end
+
 crymp = {
     web = web_ui,
     api = web_api,
+    stats = prev_stats or {
+        apiLatency = {total = 0, count = 0, medians = {}},
+        wwwLatency = {total = 0, count = 0, medians = {}},
+        playersOnline = {total = 0, count = 0, medians = {}},
+        logins = {total = 0, count = 0, medians = {}},
+        validations = {total = 0, count = 0, medians = {}},
+        serverUpdates = {total = 0, count = 0, medians = {}},
+        gsServerUpdates = {total = 0, count = 0, medians = {}}
+    },
     record_stat = function(self, key, value)
         if self.stats[key] then
             self.stats[key].total = self.stats[key].total + value
@@ -42,16 +56,6 @@ crymp = {
             self.stats[i] = {total = 0, count = 0, medians={}}
         end
     end
-}
-
-crymp.stats = crymp.stats or {
-    apiLatency = {total = 0, count = 0, medians = {}},
-    wwwLatency = {total = 0, count = 0, medians = {}},
-    playersOnline = {total = 0, count = 0, medians = {}},
-    logins = {total = 0, count = 0, medians = {}},
-    validations = {total = 0, count = 0, medians = {}},
-    serverUpdates = {total = 0, count = 0, medians = {}},
-    gsServerUpdates = {total = 0, count = 0, medians = {}}
 }
 
 Servers = db.servers

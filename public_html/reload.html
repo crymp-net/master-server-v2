@@ -2,7 +2,7 @@
     if not session.logged or session.logged.rights < 4 then
         status("401 Unauthorized")
     else
-        write({worker: WORKERID})
+        write({worker = WORKERID})
         net.reload()
     end
 ?>

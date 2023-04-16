@@ -6,6 +6,11 @@
             <a class="footer-link" href="/rules">Rules</a>
             <a class="footer-link" href="https://github.com/crymp-net/">Open source</a>
             <a class="footer-link" href="https://github.com/crymp-net/client-server/releases" target="_blank">Release notes</a>
+            <?lu
+                if session.logged and session.logged.rights >= 4 then
+                | <a class="footer-link" href="/reload">Reload</a>
+                end
+            ?>
         </div>
     </footer>
 </div>

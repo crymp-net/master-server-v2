@@ -2,6 +2,10 @@
     if not session.logged or session.logged.rights < 4 then
         status("401 Unauthorized")
     else
+        if headers.referer then
+            status("302 Temporary redirect")
+            header("location", header.referer)
+        end
         write({worker = WORKERID})
         net.reload()
     end

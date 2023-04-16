@@ -4,7 +4,7 @@
     else
         if headers.referer then
             status("302 Temporary redirect")
-            header("location", header.referer)
+            header("location", headers.referer)
         end
         write({worker = WORKERID})
         net.reload()

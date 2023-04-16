@@ -290,14 +290,14 @@ function api:upsertServer(params)
                 params.uptime = existingServer.uptime + timeDelta
                 params.activeTime = existingServer.activeTime + (params.numPlayers > 0 and timeDelta or 0)
                 params.peopleTime = existingServer.peopleTime + params.numPlayers * timeDelta
-                
+
                 local UP_BIAS = 0.01
                 local DOWN_BIAS = 0.0075
 
                 local UP_VAL = math.sqrt(params.numPlayers) * UP_BIAS * ratio
                 local DOWN_VAL = (1 + DOWN_BIAS) ^ ratio
 
-                params.rating = (params.rating + UP_VAL) + DOWN_VAL
+                params.rating = (params.rating + UP_VAL) / DOWN_VAL
                 params.ratingUpdates = existingServer.ratingUpdates + 1
 
                 if params.source ~= "http" and not needsFullGSUpdate then

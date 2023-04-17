@@ -292,7 +292,7 @@ function api:upsertServer(params)
                 params.peopleTime = existingServer.peopleTime + params.numPlayers * timeDelta
 
                 local UP_BIAS = 0.01
-                local DOWN_BIAS = 0.0075
+                local DOWN_BIAS = 0.00075
 
                 -- max tolerable ratio for upval is 2 minutes worth of play time in delta
                 local UP_VAL = math.sqrt(params.numPlayers) * UP_BIAS * math.min(4, ratio)

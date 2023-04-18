@@ -4,15 +4,16 @@
     local time = tonumber(query.time or 0)
     if not time or not query.signature or (now - time) > 60 then
         status("400 Bad request")
-        | expired or bad request
-        return
+        return write(make_error("expired or bad request"))
     end
     local expected = codec.hex_encode(crypto.hmac_sha256(query.time, RELEASE_SALT))
     if expected:lower() ~= query.signature:lower() then
         status("401 Unauthorized")
-        | invalid token
-        return
+        return write(make_error("invalid token"))
     end
     local result = await(crymp.api:updateReleases())
-    | ok
+    if iserror(result) then
+        status("500 Internal server error")
+    end
+    write(result)
 ?>

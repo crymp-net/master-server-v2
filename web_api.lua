@@ -748,7 +748,7 @@ function api:updateReleases()
             end
             local releases = codec.json_decode(contents)
             if releases == nil or #releases < 1 or #releases[1].assets < 1 then
-                return resolve(make_error("failed to parse releases from GitHub"))
+                return resolve(make_error("failed to parse releases from GitHub, response: " .. tostring(contents)))
             end
             local commit = releases[1].target_commitish
             local asset = releases[1].assets[1]
@@ -785,7 +785,7 @@ function api:updateDevReleases()
             end
             local releases = codec.json_decode(contents)
             if releases == nil or not releases.artifacts or #releases.artifacts < 1 then
-                return resolve(make_error("failed to parse dev releases from GitHub"))
+                return resolve(make_error("failed to parse dev releases from GitHub, response: " .. tostring(contents)))
             end
             local has32, has64 = false, false
             for _, artifact in ipairs(releases.artifacts) do

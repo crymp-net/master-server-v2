@@ -217,7 +217,7 @@ function crymp:getStatistics(params)
     if params.profileId then
         return aio:cached("stats", params.profileId, function ()
             return db.statistics.one:byUser(params.profileId)
-        end)
+        end, 60)
     end
 end
 

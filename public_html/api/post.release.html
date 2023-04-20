@@ -2,6 +2,11 @@
     header("content-type", "application/json")
     local now = os.time()
     local time = tonumber(query.time or 0)
+    local ctx = query.context or "none"
+    if not (ctx == "release" or ctx == "dev") then
+        status("400 Bad reqeust")
+        return write(make_error("invalid context: " .. ctx))
+    end
     if not time or not query.signature or (now - time) > 60 then
         status("400 Bad request")
         return write(make_error("expired or bad request"))
@@ -11,7 +16,12 @@
         status("401 Unauthorized")
         return write(make_error("invalid token"))
     end
-    local result = await(crymp.api:updateReleases())
+    local result = nil
+    if ctx == "release" then
+        result = await(crymp.api:updateReleases())
+    else
+        result = await(crymp.api:updateDevReleases())
+    end
     if iserror(result) then
         status("500 Internal server error")
     end

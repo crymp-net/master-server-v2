@@ -8,7 +8,7 @@
             status("400 Bad request")
             | FAIL
         else
-            if endpoint:find("reg.php") then
+            if endpoint:find("reg.php", 1, false) then
                 | <<Cookie>>#[[cookie]]<<
             else
                 | OK

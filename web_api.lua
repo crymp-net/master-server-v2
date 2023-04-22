@@ -807,7 +807,7 @@ function api:updateDevReleases()
                 local f, _ = io.open(dest .. "/CryMP-Client64.exe", "rb")
                 if f then
                     f:close()
-                    return self:getReleaseByCommit("release", commit)(resolve)
+                    return self:getReleaseByCommit("dev", commit)(resolve)
                 end
                 local get32 = aio:popen_read(ELFD, "curl", "--silent", "-L", "-H", auth, has32.archive_download_url, "--output", target_file .. "_32.zip")
                 local get64 = aio:popen_read(ELFD, "curl", "--silent", "-L", "-H", auth, has64.archive_download_url, "--output", target_file .. "_64.zip")

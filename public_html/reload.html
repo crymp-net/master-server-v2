@@ -7,6 +7,6 @@
             header("location", headers.referer)
         end
         write({worker = WORKERID})
-        net.reload()
+        aio:reload(query.full)
     end
 ?>

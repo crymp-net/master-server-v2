@@ -551,7 +551,7 @@ function web:sendReactivationLink(email, ip)
             end
             local rd, wr = aio:popen("/usr/sbin/sendmail")
             if not rd or not wr then
-                return resolve({error = "execution error"})
+                return resolve({error = "execution error: " .. tostring(wr)})
             end
             local time = tostring(os.time())
             local link = aio:to_url("/change_password", {e=true, iv=true, id=tostring(user.id), expire=tostring(os.time() + 15 * 60)})

@@ -5,8 +5,10 @@
     locals.body = locals.body or {}
     ```
     <form action="/login" method="post">
+        <label class="smart-label" for="email">Your e-mail:</label>
         <input name="email" required aria-required="true" type="email" value="#[[locals.body.email or '']]" class="nice-input" placeholder="Your e-mail">
         <br>
+        <label class="smart-label" for="password">Your password:</label>
         <input name="password" type="password" required aria-required="true" class="nice-input" placeholder="Your password">
         <br>
         <input type="submit" name="submit" class="nice-button" value="Log-in">

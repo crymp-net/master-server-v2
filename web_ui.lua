@@ -598,7 +598,7 @@ function web:changePassword(id, params)
             end
             db.users:update(user, {password = hash_password(params.password)})(function (ok)
                 if ok and not iserror(ok) then
-                    resolve({success = true})
+                    resolve(user)
                 else
                     resolve({error = {"Database error"}})
                 end

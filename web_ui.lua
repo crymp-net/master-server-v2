@@ -577,6 +577,36 @@ This link will expire in 15 minutes since the e-mail was sent
     end, 60)
 end
 
+function web:changePassword(id, params)
+    local resolve, resolver = aio:prepare_promise()
+    if params.password ~= params.password2 then
+        table.insert(errors, "Passwords do not match")
+    end
+    if #params.password < 7 then
+        table.insert(errors, "Password must be at least 7 characters long")
+    end
+    if params.password:match("^([a-zA-Z]+)$") then
+        table.insert(errors, "Password is too simple, use at least one non-alphabetical character")
+    end
+    if #errors > 0 then
+        resolve({error = errors})
+    else
+        crymp:getUser({id = id})(function(user)
+            if not user or iserror(user) then
+                return resolve({error = {"Invalid user"}})
+            end
+            db.users:update(user, {password = hash_password(params.password)})(function (ok)
+                if ok and not iserror(ok) then
+                    resolve({success = true})
+                else
+                    resolve({error = {"Database error"}})
+                end
+            end)
+        end)
+    end
+    return resolver
+end
+
 --- Encode forum post into HTML
 ---@param text string original text
 ---@return string text encoded as HTML

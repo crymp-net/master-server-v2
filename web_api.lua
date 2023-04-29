@@ -767,6 +767,7 @@ function api:updateReleases()
                     if not contents or not contents:find("inflating") then
                         return resolve(make_error("failed to inflate zip"))
                     end
+                    pcall(self.cleanupRelease, self, dest, {target_file})
                     self:updateReleaseByCommit("release", commit, dest)(resolve)
                 end)
             end)
@@ -821,6 +822,7 @@ function api:updateDevReleases()
                         if not contents32 or not contents32:find("inflating") or not contents64 or not contents64:find("inflating") then
                             return resolve(make_error("failed to inflate zip"))
                         end
+                        pcall(self.cleanupRelease, self, dest, {target_file .. "_32.zip", target_file .. "_64.zip"})
                         self:updateReleaseByCommit("dev", commit, dest)(resolve)
                     end)
                 end)
@@ -830,6 +832,18 @@ function api:updateDevReleases()
         end)
         return resolver
     end, 5)
+end
+
+function api:cleanupRelease(dest, files)
+    local dest_files = net.listdir(dest)
+    for _, file in ipairs(dest_files) do
+        if file:match("%.pdb$") then
+            os.remove(dest .. "/" .. file)
+        end
+    end
+    for _, file in ipairs(files) do
+        os.remove(file)
+    end
 end
 
 return api

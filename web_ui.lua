@@ -549,16 +549,14 @@ function web:sendReactivationLink(email, ip)
             elseif not user then 
                 return resolve({success = true}) 
             end
-            local rd, wr = aio:popen(ELFD, "/usr/sbin/sendmail", "-Am", "-i", "-v", "-t")
+            local rd, wr = aio:popen(ELFD, "/usr/sbin/sendmail", "-t", "-i", "-v")
             if not rd or not wr then
-                return resolve({error = "execution error: " .. tostring(wr)})
+                return resolve({error = "execution error"})
             end
             aio:read_stream(rd)(function (result)
-                print("Stream: ", result)
                 resolve({success = true})
             end)
             local link = aio:to_url("/change_password", {e=true, iv=true, id=tostring(user.id), expire=tostring(os.time() + 15 * 60)})
-            wr.cw = true
             wr:write(string.format(
 [[
 Subject: CryMP.net - Forgotten password
@@ -571,6 +569,7 @@ Content-type: text/plain; charset=utf-8
 Click on the following URL in order to change your password:
 https://crymp.net%s
 This link will expire in 15 minutes since the e-mail was sent
+.
 ]], user.display, user.email, link
             ):gsub("^\\s+", ""):gsub("\\s+$", ""))
         end)

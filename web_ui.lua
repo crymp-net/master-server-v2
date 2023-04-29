@@ -540,6 +540,40 @@ function web:removeProfile(user)
     return resolver
 end
 
+function web:sendReactivationLink(email, ip)
+    return aio:cached("forgot", email, function ()
+        local resolve, resolver = aio:prepare_promise()
+        crymp:getUser({email = email})(function (user)
+            if iserror(user) then 
+                return resolve({error = "database error"})
+            elseif not user then 
+                return resolve({success = true}) 
+            end
+            local rd, wr = aio:popen("sendmail")
+            if not rd or not wr then
+                return resolve({error = "execution error"})
+            end
+            local time = tostring(os.time())
+            local link = aio:to_url("/change_password", {e=true, iv=true, id=tostring(user.id), expire=tostring(os.time() + 15 * 60)})
+            wr.cw = true
+            wr:write(string.format(
+[[
+Subject: CryMP.net - Forgotten password
+To: %s <%s>
+From: CryMP.net <noreply@crymp.net>
+Sender: CryMP.net <noreply@crymp.net>
+X-Mailer: 80s
+MIME-Version: 1.0
+Content-type: text/plain; charset=utf-8
+Click on the following URL in order to change your password:
+https://crymp.net%s
+This link will expire in 15 minutes since the e-mail was sent
+]], link
+            ):gsub("^\\s+", ""):gsub("\\s+$", ""))
+        end)
+    end, 15)
+end
+
 --- Encode forum post into HTML
 ---@param text string original text
 ---@return string text encoded as HTML

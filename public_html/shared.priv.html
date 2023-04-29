@@ -1,7 +1,7 @@
 <?lu
     if headers.cookie then
         local found = aio:decrypt(headers.cookie:match("pid=([^ ;]+)"), aio:create_key("/session"))
-        if found then
+        if found and tonumber(found) then
             local user = await(crymp:getUser{ id= tonumber(found) })
             if user then
                 session.logged = user

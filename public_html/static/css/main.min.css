@@ -707,6 +707,25 @@ canvas.winter {
     color: red
 }
 
+.errinput {
+    border: 1px solid red !important;
+}
+.agree {
+    display: flex;
+    width: 320px;
+    max-width: 100%;
+    flex-direction: row;
+    margin: 0 auto;
+}
+label.smart-label {
+    width: 320px;
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: left;
+    padding-left: 4px;
+}
+
 @media (min-width:1199px) {
     .int-wrap {
         display: flex

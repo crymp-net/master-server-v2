@@ -553,9 +553,6 @@ function web:sendReactivationLink(email, ip)
             if not rd or not wr then
                 return resolve({error = "execution error"})
             end
-            aio:read_stream(rd)(function (result)
-                resolve({success = true})
-            end)
             local link = aio:to_url("/change_password", {e=true, iv=true, id=tostring(user.id), expire=tostring(os.time() + 15 * 60)})
             wr:write(string.format(
 [[
@@ -572,6 +569,7 @@ This link will expire in 15 minutes since the e-mail was sent
 .
 ]], user.display, user.email, link
             ):gsub("^\\s+", ""):gsub("\\s+$", ""))
+            resolve({success = true})
         end)
         return resolver
     end, 60)

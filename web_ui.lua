@@ -568,7 +568,7 @@ Content-type: text/plain; charset=utf-8
 Click on the following URL in order to change your password:
 https://crymp.net%s
 This link will expire in 15 minutes since the e-mail was sent
-]], link
+]], user.display, user.email, link
             ):gsub("^\\s+", ""):gsub("\\s+$", ""))
         end)
         return resolver

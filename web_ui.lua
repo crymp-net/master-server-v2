@@ -579,6 +579,7 @@ end
 
 function web:changePassword(id, params)
     local resolve, resolver = aio:prepare_promise()
+    local errors = {}
     if params.password ~= params.password2 then
         table.insert(errors, "Passwords do not match")
     end

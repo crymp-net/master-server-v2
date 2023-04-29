@@ -574,7 +574,7 @@ This link will expire in 15 minutes since the e-mail was sent
             ):gsub("^\\s+", ""):gsub("\\s+$", ""))
         end)
         return resolver
-    end, 15)
+    end, 60)
 end
 
 --- Encode forum post into HTML

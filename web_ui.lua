@@ -549,7 +549,7 @@ function web:sendReactivationLink(email, ip)
             elseif not user then 
                 return resolve({success = true}) 
             end
-            local rd, wr = aio:popen(ELFD, "/usr/sbin/sendmail", user.email)
+            local rd, wr = aio:popen(ELFD, "/usr/sbin/sendmail", "-Am", "-i", "-v", "-t")
             if not rd or not wr then
                 return resolve({error = "execution error: " .. tostring(wr)})
             end

@@ -571,6 +571,7 @@ This link will expire in 15 minutes since the e-mail was sent
 ]], link
             ):gsub("^\\s+", ""):gsub("\\s+$", ""))
         end)
+        return resolver
     end, 15)
 end
 

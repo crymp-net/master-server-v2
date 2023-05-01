@@ -115,7 +115,7 @@
                     <a href="#[[to_url('/server', {ip=server.ip, port=server.port})]]">#[[(server.password or "0") == "0" and "🔐 " or ""]]#[[server.name or "No name"]]</a>
                 </div>
                 <div class="col-xs-3 col-sm-2">#[[server.numPlayers or 0:d]]/#[[server.maxPlayers or 32:d]]</div>
-                <div class="col-sm-4 hidden-xs" th:text="${server.mapName}">#[[server.mapName]]</div>
+                <div class="col-sm-4 hidden-xs">#[[server.mapName or "Mesa"]]</div>
             </div>
             ```
         end

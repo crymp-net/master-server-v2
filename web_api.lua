@@ -87,7 +87,7 @@ function api:toServerUpdate(query, ip, port, source)
         maxPlayers = tonumber(query["maxpl"] or "0"),
         pak = query["pak"],
         map = query["map"] ~= nil and query["map"]:lower() or nil,
-        mapName = query["mapnm"],
+        mapName = query["mapnm"] or self:guessMapName(query["map"] or "multiplayer/ps/mesa"),
         mapDownloadLink = query["mapdl"],
         password = self:decodePasswordValue(query["pass"]) and "1" or "",
         ranked = (query["ranked"] or "0") == "1",

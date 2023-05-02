@@ -7,7 +7,7 @@
         local result = await(crymp.web:removePost(query.e.id))
         if not status or iserror(result) then
             status("500 Internal server error")
-            | Server error
+            | Server error: #[[result.error]]
         else
             status("302 Temporary redirect")
             header("location", headers.referer or "/forum")

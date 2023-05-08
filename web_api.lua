@@ -761,11 +761,13 @@ function api:updateReleases()
             end
             aio:popen_read(ELFD, "curl", "--silent", "-L", asset.browser_download_url, "--output", target_file)(function (contents)
                 if contents == nil then
+                    pcall(self.cleanupRelease, self, dest, {target_file})
                     return resolve(make_error("failed to download Zip from GitHub"))
                 end
                 aio:popen_read(ELFD, "unzip", target_file, "-d", dest)(function (contents)
                     if not contents or not contents:find("inflating") then
-                        return resolve(make_error("failed to inflate zip"))
+                        pcall(self.cleanupRelease, self, dest, {target_file})
+                        return resolve(make_error("failed to inflate zip, error: \n" .. tostring(contents)))
                     end
                     pcall(self.cleanupRelease, self, dest, {target_file})
                     self:updateReleaseByCommit("release", commit, dest)(resolve)
@@ -814,13 +816,15 @@ function api:updateDevReleases()
                 local get64 = aio:popen_read(ELFD, "curl", "--silent", "-L", "-H", auth, has64.archive_download_url, "--output", target_file .. "_64.zip")
                 aio:gather(get32, get64)(function (res32, res64)
                     if not res32 or not res64 then
+                        pcall(self.cleanupRelease, self, dest, {target_file .. "_32.zip", target_file .. "_64.zip"})
                         return resolve(make_error("downloading release ZIP failed"))
                     end
                     local unzip32 = aio:popen_read(ELFD, "unzip", target_file .. "_32.zip", "-d", dest)
                     local unzip64 = aio:popen_read(ELFD, "unzip", target_file .. "_64.zip", "-d", dest)
                     aio:gather(unzip32, unzip64)(function (contents32, contents64)
                         if not contents32 or not contents32:find("inflating") or not contents64 or not contents64:find("inflating") then
-                            return resolve(make_error("failed to inflate zip"))
+                            pcall(self.cleanupRelease, self, dest, {target_file .. "_32.zip", target_file .. "_64.zip"})
+                            return resolve(make_error("failed to inflate zip, 32bit: \n" .. tostring(contents32) .. "\n64bit: " .. tostring(contents64)))
                         end
                         pcall(self.cleanupRelease, self, dest, {target_file .. "_32.zip", target_file .. "_64.zip"})
                         self:updateReleaseByCommit("dev", commit, dest)(resolve)
@@ -838,11 +842,11 @@ function api:cleanupRelease(dest, files)
     local dest_files = net.listdir(dest)
     for _, file in ipairs(dest_files) do
         if file:match("%.pdb$") then
-            os.remove(dest .. "/" .. file)
+            pcall(os.remove, dest .. "/" .. file)
         end
     end
     for _, file in ipairs(files) do
-        os.remove(file)
+        pcall(os.remove, file)
     end
 end
 

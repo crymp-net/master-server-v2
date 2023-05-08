@@ -839,7 +839,7 @@ function api:updateDevReleases()
 end
 
 function api:cleanupRelease(dest, files)
-    local dest_files = net.listdir(dest)
+    local dest_files = net.listdir(dest .. "/")
     for _, file in ipairs(dest_files) do
         if file:match("%.pdb$") then
             pcall(os.remove, dest .. "/" .. file)

@@ -424,7 +424,7 @@ end
 
 --- Get forum post by ID
 ---@param postId integer
----@return aiopromise<{id: integer}> promise
+---@return aiopromise<{id: integer, thread: any}> promise
 function web:getPostById(postId)
     return db.posts.one:byId(postId)
 end

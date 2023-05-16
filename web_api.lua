@@ -334,7 +334,7 @@ function api:upsertServer(params)
                                     if iserror(stats) and not stats.old then
                                         print("failed to update player stats: ", stats.error, "data: ", codec.json_encode({
                                             params = params,
-                                            existingServer = existingMap,
+                                            existingServer = existingServer,
                                             timeDelta = timeDelta
                                         }))
                                     end
@@ -469,7 +469,7 @@ function api:updateStatistics(server, before, delta)
         end
         db.statistics.all:byIpPortPlayerIds(server.ip, server.port, allIds)(function (current)
             if current and iserror(current) then
-                resolve({error = "failed to update stats: " .. current.error})
+                resolve({error = "failed to update stats: " .. current.error .. ", all ids: " .. codec.json_encode(allIds)})
             elseif current then
                 local values = {}
                 -- update delta into absolute values

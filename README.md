@@ -9,7 +9,7 @@ It's written in Lua using [80s](https://github.com/diznq/80s) as webserver frame
 Prerequisites:
 - [80s](https://github.com/diznq/80s)
 - MySQL set-up with native_password for authentication (MariaDB has it as default)
-- for running locally, Linux / FreeBSD / macOS or WSL (plain Windows will be supported one day in future)
+- for running locally, Linux / FreeBSD / macOS / WSL or Windows (although IOCP on Windows is supported only partially)
 - optional: [gamespy-emulator](https://github.com/crymp-net/gamespy-emulator) built in `gsemu` directory
 
 **Example directory hierarchy initialization**

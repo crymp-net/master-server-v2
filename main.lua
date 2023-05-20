@@ -74,7 +74,12 @@ PROXY_SECRET = os.getenv("PROXY_SECRET") or "proxy-secret"
 GH_ACCESS_TOKEN = os.getenv("GH_ACCESS_TOKEN") or "gh-access-token"
 
 function isodate(time)
-    return os.date("!%Y-%m-%dT%T", time)
+    local ok, result = pcall(os.date, "!%Y-%m-%dT%T", time)
+    if ok then return result end
+    -- windows compatibility
+    local ok, result = pcall(os.date, "%Y-%m-%dT%H:%I:%S", time)
+    if ok then return result end
+    return os.date()
 end
 
 function hash(text)

@@ -197,7 +197,7 @@ function crymp:getUser(params)
     if params.id then
         return Users.one:byId(params.id)
     elseif params.email then
-        return Users.one:byEmail(params.email)
+        return Users.one:byEmail(params.email:lower())
     elseif params.nick then
         return Users.one:byNick(params.nick)
     end

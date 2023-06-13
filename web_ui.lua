@@ -542,6 +542,7 @@ function web:removeProfile(user)
 end
 
 function web:sendReactivationLink(email, ip)
+    email = email:lower()
     return aio:cached("forgot", email, function ()
         local resolve, resolver = aio:prepare_promise()
         crymp:getUser({email = email})(function (user)

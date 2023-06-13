@@ -536,7 +536,7 @@ function api:login(user, password, strict)
     local isEmail = user:match("(.-)@(.+)%.(.*)")
     local userFuture = nil
     if isEmail or strict then
-        userFuture = db.users.one:byEmail(user)
+        userFuture = db.users.one:byEmail(user:lower())
     else
         userFuture = db.users.one:byNick(user)
     end

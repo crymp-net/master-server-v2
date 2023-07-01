@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./effects.js" type="module"></script>
+    <script id="vs" type="text/plain">
+        in vec3 vertexPosition;
+        in vec2 vertexTexcoord;
+        in vec3 vertexNormal;
+        
+        out vec3 v_position;
+        out vec2 v_texcoord;
+        out vec3 v_normal;
+        
+        void main(){
+            vec4 pos = vec4(vertexPosition, 1.0);
+            gl_Position = pos;
+            v_position = vertexPosition;
+            v_texcoord = vertexTexcoord;
+            v_normal = vertexNormal;
+        }
+    </script>
+    <script id="fs" type="text/plain">
+        precision highp float;
+        uniform vec4 color;
+        
+        in vec3 v_position;
+        in vec2 v_texcoord;
+        in vec3 v_normal;
+        
+        layout(location = 0) out vec4 frag_diffuse;
+        layout(location = 1) out vec4 frag_depth;
+        
+        uniform sampler2D diffuse;
+        uniform sampler2D depth;
+        uniform vec2 resolution;
+
+        uniform vec2 cursor;
+        uniform float time;
+
+        #define ZF 150.0
+        #define ZN 0.25
+
+        float GetDepth(vec2 pos){
+            return texture(depth, pos).r;
+        }
+
+        void main(){
+            vec2 pixel = 1.0 / resolution;
+            vec2 disp = (cursor - 0.5) * 2.0;
+            vec2 rawUv = vec2(v_texcoord.x, 1.0 - v_texcoord.y);
+            float vDepth = texture(depth, rawUv).r;
+            
+            vec2 uv = vec2(v_texcoord.x, 1.0 - v_texcoord.y) - vDepth * disp * pixel * 10.0;
+
+            vec3 vColor = texture(diffuse, uv).rgb; 
+
+            frag_diffuse = vec4(vColor, 1.0);
+            frag_depth = vec4(vDepth, vDepth, vDepth, 1.0);
+        }
+    </script>
+    
+    <script id="entityvs" type="text/plain">
+        in vec3 vertexPosition;
+        in vec2 vertexTexcoord;
+        in vec3 vertexNormal;
+        
+        out vec3 v_position;
+        out vec2 v_texcoord;
+        out vec3 v_normal;
+
+        uniform vec4 entity;
+        uniform vec4 zinfo;
+        uniform vec2 resolution;
+        uniform vec2 cursor;
+        
+        void main(){
+            vec2 pixel = 1.0 / resolution;
+            float size = 1.0 - entity.z;
+            vec2 disp = (cursor - 0.5) * 2.0;
+            disp.x = 0.0;
+            float ar = resolution.x / resolution.y;
+            vec4 pos = vec4(vertexPosition.rg * entity.ba + (entity.rg - 0.5) * 2.0, 0.0, 1.0);
+            pos.y = pos.y * ar;
+            pos.xy += disp * (1.0 - zinfo.r) * pixel * 300.0;
+            gl_Position = pos;
+            v_position = vertexPosition;
+            v_texcoord = vertexTexcoord;
+            v_normal = vertexNormal;
+        }
+    </script>
+
+    <script id="entityfs" type="text/plain">
+        precision highp float;
+        uniform vec4 color;
+        
+        in vec3 v_position;
+        in vec2 v_texcoord;
+        in vec3 v_normal;
+        
+        layout(location = 0) out vec4 frag_diffuse;
+        layout(location = 1) out vec4 frag_distort;
+        
+        uniform sampler2D diffuse;
+        uniform sampler2D depth;
+
+        uniform sampler2D image;
+        uniform sampler2D distort;
+
+        uniform vec2 resolution;
+
+        uniform vec2 cursor;
+        uniform vec4 entity;
+        uniform float time;
+        uniform vec4 zinfo;
+
+        void main(){
+            vec2 pixel = 1.0 / resolution;
+            vec2 disp = (cursor - 0.5) * 2.0;
+            vec2 uv = vec2(v_texcoord.x, 1.0 - v_texcoord.y);
+            
+            frag_diffuse = texture(image, uv);
+            frag_distort = texture(distort, uv);
+            frag_distort.z = zinfo.r;
+            frag_distort.a = frag_diffuse.a;
+        }
+    </script>
+
+    <script id="postfxfs" type="text/plain">
+        precision highp float;
+        uniform vec4 color;
+        
+        in vec3 v_position;
+        in vec2 v_texcoord;
+        in vec3 v_normal;
+        
+        layout(location = 0) out vec4 frag_diffuse;
+        
+        uniform sampler2D diffuse;
+        uniform sampler2D depth;
+        uniform sampler2D overlay;
+        uniform sampler2D distort;
+        uniform vec2 resolution;
+
+        uniform vec2 cursor;
+        uniform float time;
+
+        #define ZF 150.0
+        #define ZN 0.25
+
+        
+        float GetDepth(vec2 pos){
+            return texture(depth, pos).r;
+        }
+
+        vec3 GetNormal(vec2 texcoord)
+        {
+            vec2 pixel = 1.0 / resolution;
+            vec3 offset = vec3(pixel, 0.0);
+            vec2 posCenter = texcoord.xy;
+            vec2 posNorth  = posCenter - offset.zy;
+            vec2 posEast   = posCenter + offset.xz;
+
+            vec3 vertCenter = vec3(posCenter - 0.5, 1.0) * GetDepth(posCenter);
+            vec3 vertNorth  = vec3(posNorth - 0.5,  1.0) * GetDepth(posNorth);
+            vec3 vertEast   = vec3(posEast - 0.5,   1.0) * GetDepth(posEast);
+
+            return normalize(cross(vertCenter - vertNorth, vertCenter - vertEast));
+        }
+        
+        float ToNonlinear(float linearDepth)
+        {
+            float nonLinearDepth = (ZF + ZN - 2.0 * ZN * ZF / linearDepth) / (ZF - ZN);
+            nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
+            return nonLinearDepth;
+        }
+
+        vec3 ToGeom(vec3 pos) {
+            float aspect = 16.0 / 9.0;
+            float tanFov = tan(radians(60.0));
+
+            vec2 ndc = pos.xy * 2.0 - 1.0;
+            float depth = ToNonlinear(pos.z);
+            float z = depth * 2.0 - 1.0;
+
+            float z_eye = 2.0 * ZN * ZF / (ZF + ZN - z * (ZF - ZN));
+            vec3 viewPos = vec3(z_eye * ndc.x * aspect * tanFov, z_eye * ndc.y * tanFov, -z_eye); 
+
+            return viewPos;
+        }
+
+        void main(){
+            vec2 pixel = 1.0 / resolution;
+            vec2 uv = vec2(v_texcoord.x, v_texcoord.y);
+            
+            vec4 over = texture(overlay, uv);
+            vec4 distortion = texture(distort, uv);
+            float entityDepth = distortion.z;
+            float vDepth = texture(depth, uv).r;
+
+            vec3 pos = ToGeom(vec3(uv, vDepth));
+            float height = (pos.y + 1.0) / 2.0;
+
+            distortion.rg = (distortion.rg - 0.5) * 2.0;
+
+            /*
+            if(uv.y < height && entityDepth >= vDepth / 255.0) {
+                over.a = 0.0;
+                distortion.rg = vec2(0.0, 0.0);
+            }
+            */
+
+            vec4 bg = texture(diffuse, uv + distortion.rg * pixel * 20.0);
+            
+            float dstDefault = distance(over, vec4(0.5, 0.5, 0.5, 1.0));
+            if(dstDefault < 1.0 / 255.0) {
+                over.a = 0.0;
+            }
+
+            frag_diffuse = vec4(mix(bg.rgb, over.rgb, over.a), 1.0);
+        }
+    </script>
+</head>
+<body>
+    <canvas id="target" width="1600" height="900"></canvas>
+</body>
+</html>

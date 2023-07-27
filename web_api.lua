@@ -72,6 +72,16 @@ function api:toServerUpdate(query, ip, port, source)
         behindProxy = true
         source = "gamespy"
     end
+
+    if query.mapdl and tostring(query.mapdl):find("pak:") then
+        query.mapdl = query.mapdl:gsub("%+pak:", " pak:")
+        local part1, part2 = query.mapdl:match("^(.-)pak:(.*)$")
+        if part1 and part2 then
+            query.mapdl = part1:gsub(" *$", ""):gsub("^ *", "")
+            query.pak = part2:gsub(" *$", ""):gsub("^ *", "")
+        end
+    end
+
     local obj = {
         behindProxy = behindProxy,
         source = source,

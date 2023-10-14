@@ -450,6 +450,7 @@ function web:signup(params)
             return resolver
         end
     end
+    params.email = params.email:lower()
     if params.password ~= params.password2 then
         table.insert(errors, "Passwords do not match")
     end
@@ -475,7 +476,6 @@ function web:signup(params)
         resolve({error = errors})
         return resolver
     end
-    params.email = params.email:lower()
     db.users.one:byEmailOrNick(params.email, params.nickname)(function (result)
         if iserror(result) then
             resolve({error = {"Database error"}})

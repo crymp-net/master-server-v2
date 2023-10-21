@@ -1,6 +1,6 @@
 local db = require("crymp.db")
 local aio = require("aio.aio")
-local orm = require("server.orm")
+local orm = require("aio.lib.orm")
 local web_ui = loadfile("crymp/web_ui.lua")()
 local web_api = loadfile("crymp/web_api.lua")()
 

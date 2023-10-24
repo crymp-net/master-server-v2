@@ -330,11 +330,6 @@ export class Texture2D {
      * }} params 
      */
     constructor(engine, params){
-        
-        function isPowerOf2(value){
-            return (value & (value - 1)) == 0;
-        }
-
         let {width, height, format, internalFormat, type} = params;
         const ctx = engine.getContext();
         this.gl = ctx;
@@ -363,16 +358,36 @@ export class Texture2D {
         this.normal = params.normal || false;
         this.slot = params.slot || 0;
 
-        const data = params.data || null;
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.loadImage(params, true)
+    }
+
+    /**
+     * Initialize texture
+     * @param {Engine} engine 
+     * @param {{
+    *  width: number,
+    *  height: number,
+    *  format: number?,
+    *  internalFormat: number?, 
+    *  type: number?,
+    *  hdr: boolean?,
+    *  normal: boolean?,
+    *  depth: boolean?,
+    *  url: string?
+    * }} params 
+    */
+    loadImage(params, bind) {
+        function isPowerOf2(value){
+            return (value & (value - 1)) == 0;
+        }
 
         if(params.url){
             const image = new ImageWrapper();
             const self = this;
 
             const pixel = new Uint8Array([0, 192, 255, 255]);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, this.level, this.internalFormat, 1, 1, this.border, this.format, this.type, pixel);
-
+            
             image.onload = (() => {
                 self.gl.bindTexture(self.gl.TEXTURE_2D, self.texture);
                 if(image.format == "rgb") {
@@ -381,7 +396,7 @@ export class Texture2D {
                     self.internalFormat = self.gl.R32F;
                     self.format = self.gl.RED;
                     self.type = self.gl.FLOAT;
-                    self.gl.texImage2D(self.gl.TEXTURE_2D, self.level, self.internalFormat, image.width, image.height, self.border, self.format, self.type, image.getData());
+                    self.gl6.texImage2D(self.gl.TEXTURE_2D, self.level, self.internalFormat, image.width, image.height, self.border, self.format, self.type, image.getData());
                 }
                 self.width = image.width;
                 self.height = image.height;
@@ -396,6 +411,8 @@ export class Texture2D {
             });
             image.setSource(params.url);
         } else {
+            const data = params.data || null;
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
             this.gl.texImage2D(this.gl.TEXTURE_2D, this.level, this.internalFormat, this.width, this.height, this.border, this.format, this.type, data);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);

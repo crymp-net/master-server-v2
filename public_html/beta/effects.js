@@ -8,8 +8,8 @@ import {
     Quad
 } from "./engine.js";
 
-const WIDTH = 1600;
-const HEIGHT = 900;
+let WIDTH = 1600;
+let HEIGHT = 900;
 
 class Effects {
     /**
@@ -20,7 +20,10 @@ class Effects {
         this.engine = new Engine(output);
         const engine = this.engine;
         const cursorPosition = [ 0, 0 ];
-        const resolution = [ output.width, output.height ];
+        const bbox = output.getBoundingClientRect()
+        WIDTH = bbox.right - bbox.left;
+        HEIGHT = bbox.bottom - bbox.top;
+        const resolution = [ WIDTH, HEIGHT ];
 
         output.addEventListener("mousemove", (event) => {
             const rectangle = output.getBoundingClientRect();
@@ -68,17 +71,32 @@ class Effects {
         const quad = new Quad(engine);
 
         const FgImage = new Texture2D(engine, {
-            url: "../static/images/3D_6FG.jpg"
+            url: "../static/images/beta/FOREGROUND.jpg"
         });
         const FgDepth = new Texture2D(engine, {
-            url: "../static/images/3D_6DM.jpg"
+            url: "../static/images/beta/DEPTHMAP.jpg"
         });
 
         const RaindropImage = new Texture2D(engine , {
-            url: "../static/images/RAINDROP.png"
+            url: "../static/images/beta/OVERLAY.png"
         });
         const RaindropDistort = new Texture2D(engine, {
-            url: "../static/images/RAINDROP_DISTORT.png"
+            url: "../static/images/beta/OVERLAY_DISTORT.png"
+        })
+
+        const LU = {
+            fg: FgImage,
+            dm: FgDepth,
+            od: RaindropDistort,
+            oi: RaindropImage
+        };
+
+        document.querySelectorAll(".file-selector").forEach(sel => {
+            const target = sel.id;
+            sel.onchange = () => {
+                const files = sel.files;
+                LU[target].loadImage({ url: URL.createObjectURL(files[0]) })
+            }
         })
 
         const DeferDiffuse = new Texture2D(engine, { width: WIDTH, height: HEIGHT, slot: 0 });
@@ -94,9 +112,12 @@ class Effects {
 
         const entities = [];
 
+        /*
         for(let i = 0; i < 500; i++) {
             entities.push({x: Math.random(), y: Math.random(), dx: Math.random(), z: Math.random(), dy: -1, life: 0})
         }
+        */
+       entities.push({x: 0, y: 0, dx: 0, dy: 0, z: 1, life: 0})
 
         this.engine.onFrame( (engine, deltaTime) => {
             timePassed += deltaTime;
@@ -134,6 +155,7 @@ class Effects {
             entitiesProgram.getUniform("cursor").set(cursorPosition);
             
             
+            /*
             entities.forEach(entity => {
                 entityPosition.set([
                     entity.x, 
@@ -160,6 +182,10 @@ class Effects {
                 
                 quad.draw(engine);
             });
+            */
+
+            entityPosition.set([0.5, 0.5, 1, 1])
+            quad.draw(engine)
 
             engine.setRenderTarget(null);
             engine.useProgram(postFxProgram);

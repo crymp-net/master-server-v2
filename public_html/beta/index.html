@@ -56,7 +56,7 @@
             vec2 pixel = 1.0 / resolution;
             vec2 disp = (cursor - 0.5) * 2.0;
             vec2 rawUv = vec2(v_texcoord.x, 1.0 - v_texcoord.y);
-            float vDepth = texture(depth, rawUv).r;
+            float vDepth = 1.0 - texture(depth, rawUv).r;
             
             vec2 uv = vec2(v_texcoord.x, 1.0 - v_texcoord.y) - vDepth * disp * pixel * 10.0;
 

@@ -6,8 +6,8 @@ function init3DBackground(){
     const output = document.getElementById("wrap");
 
     const imgId = output.getAttribute("data-image")
-    const fgPath = "/static/images/3D_" + imgId + "FG.jpg";
-    const depthPath = "/static/images/3D_" + imgId + "DM.jpg";
+    const fgPath = "/static/images/round_2/3D_FG" + imgId + ".jpg";
+    const depthPath = "/static/images/round_2/3D_DM" + imgId + ".jpg";
 
     const loader = new PIXI.loaders.Loader();
     output.appendChild(renderer.view);

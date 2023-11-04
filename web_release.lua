@@ -99,7 +99,7 @@ aio:stream_http_post("/api/v2_release", function (fd, query_, headers, body)
         local err = nil
         for _, file in ipairs(files) do
             file.content = result:sub(pivot, pivot + file.size - 1)
-            pivot = pivot + file.size - 1
+            pivot = pivot + file.size
             if file.name == "CryMP-Client32.exe" or file.name == "CryMP-Client64.exe" then
                 local f, _ = io.open(dest .. "/" .. file.name, "wb")
                 if not f then

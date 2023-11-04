@@ -737,7 +737,7 @@ function api:ping(ip, port)
             if not contents then
                 return resolve(make_error("failed to launch ping"))
             end
-            if tonumber(contents) < 0 then
+            if (tonumber(contents) or 0) < 0 then
                 return resolve(make_error("server unreachable"))
             end
             resolve(tonumber(contents))

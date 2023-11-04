@@ -252,7 +252,7 @@ local likes = orm:create(sql, {
 
 local releases = orm:create(sql, {
     source = "releases",
-    index = {"release_type"},
+    index = {"releaseType", "commit"},
     --[[
         create table releases(
             release_type varchar(20),

@@ -3,6 +3,7 @@ local aio = require("aio.aio")
 local orm = require("aio.lib.orm")
 local web_ui = loadfile("crymp/web_ui.lua")()
 local web_api = loadfile("crymp/web_api.lua")()
+local web_release = loadfile("crymp/web_release.lua")()
 
 aio:set_max_cache_size(100000)
 
@@ -72,6 +73,7 @@ STATIC_ID_SALT = os.getenv("STATIC_ID_SALT") or "static-id-salt"
 RELEASE_SALT = os.getenv("RELEASE_SALT") or "release-salt"
 PROXY_SECRET = os.getenv("PROXY_SECRET") or "proxy-secret"
 GH_ACCESS_TOKEN = os.getenv("GH_ACCESS_TOKEN") or "gh-access-token"
+RELEASE_EXPIRY = tonumber(os.getenv("RELEASE_EXPIRY") or "60")
 
 function isodate(time)
     local ok, result = pcall(os.date, "!%Y-%m-%dT%T", time)

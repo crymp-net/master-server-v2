@@ -1,8 +1,11 @@
 local db = require("crymp.db")
+local smtp_client = require("aio.lib.smtp_client")
 local DELETED_USER = {display="Aztec", id=0, rights=4}
 
 --- @class web_ui
 local web = {}
+
+smtp_client:init({host = "mail.crymp.net", logging = false, ssl = true})
 
 --- Get entire forum as a traversable tree structure for UI (can be cached later as well)
 ---@param rights integer requester user rights
@@ -551,27 +554,28 @@ function web:sendReactivationLink(email, ip)
             elseif not user then 
                 return resolve({success = true}) 
             end
-            local rd, wr = aio:popen(ELFD, "/usr/sbin/sendmail", "-t", "-i", "-v")
-            if not rd or not wr then
-                return resolve({error = "execution error"})
-            end
             local link = aio:to_url("/change_password", {e=true, iv=true, id=tostring(user.id), expire=tostring(os.time() + 15 * 60)})
-            wr:write(string.format(
-[[
-Subject: CryMP.net - Forgotten password
-To: %s <%s>
-From: CryMP.net <noreply@crymp.net>
-Sender: CryMP.net <noreply@crymp.net>
-X-Mailer: 80s
-MIME-Version: 1.0
-Content-type: text/plain; charset=utf-8
+            smtp_client:send_mail({
+                from = "noreply@crymp.net",
+                to = user.email,
+                subject = "CryMP.net - Forgotten password",
+                headers = {
+                    ["X-Mailer"] = "80s",
+                    ["MIME-Version"] =  "1.0",
+                    ["Content-type"] =  "text/plain; charset=utf-8"
+                },
+                body = string.format([[
 Click on the following URL in order to change your password:
 https://crymp.net%s
 This link will expire in 15 minutes since the e-mail was sent
-.
-]], user.display, user.email, link
-            ):gsub("^\\s+", ""):gsub("\\s+$", ""))
-            resolve({success = true})
+                ]], link):gsub("^\\s+", ""):gsub("\\s+$", "")
+            })(function (result)
+                if iserror(result) then
+                    resolve(result)
+                else
+                    resolve({success = true})
+                end
+            end)
         end)
         return resolver
     end, 60)

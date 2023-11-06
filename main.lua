@@ -4,8 +4,12 @@ local orm = require("aio.lib.orm")
 local web_ui = loadfile("crymp/web_ui.lua")()
 local web_api = loadfile("crymp/web_api.lua")()
 local web_release = loadfile("crymp/web_release.lua")()
+local dns = require("aio.lib.dns")
 
+aio:set_dns(dns)
 aio:set_max_cache_size(100000)
+
+SMTP_CLIENT = true
 
 local prev_stats = nil
 if crymp then

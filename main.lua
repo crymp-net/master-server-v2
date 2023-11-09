@@ -9,7 +9,7 @@ local dns = require("aio.lib.dns")
 aio:set_dns(dns)
 aio:set_max_cache_size(100000)
 
-SMTP_CLIENT = false
+SMTP_CLIENT = true
 
 local prev_stats = nil
 if crymp then

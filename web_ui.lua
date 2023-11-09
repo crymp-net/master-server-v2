@@ -5,7 +5,7 @@ local DELETED_USER = {display="Aztec", id=0, rights=4}
 --- @class web_ui
 local web = {}
 
-smtp_client:init({ssl = true})
+smtp_client:init({ssl = true, host = "crymp.net"})
 
 --- Get entire forum as a traversable tree structure for UI (can be cached later as well)
 ---@param rights integer requester user rights

@@ -354,7 +354,11 @@ export class Texture2D {
         this.type = type;
         this.level = 0;
         this.border = 0;
+        /**
+         * @type {HTMLVideoElement?}
+         */
         this.video = null;
+        this.isVideo = false;
         this.normal = params.normal || false;
         this.slot = params.slot || 0;
 
@@ -378,6 +382,11 @@ export class Texture2D {
     * }} params 
     */
     loadImage(params, bind) {
+        this.isVideo = false;
+        if(this.video && !this.video.paused) {
+            this.video.pause();
+        }
+
         function isPowerOf2(value){
             return (value & (value - 1)) == 0;
         }
@@ -386,8 +395,6 @@ export class Texture2D {
             const image = new ImageWrapper();
             const self = this;
 
-            const pixel = new Uint8Array([0, 192, 255, 255]);
-            
             image.onload = (() => {
                 self.gl.bindTexture(self.gl.TEXTURE_2D, self.texture);
                 if(image.format == "rgb") {
@@ -422,22 +429,32 @@ export class Texture2D {
 
     /**
      * Load video
-     * @param {HTMLVideoElement} video 
+     * @param {string} src 
      */
     loadVideo(video) {
-        const self = this;
-        this.video = video;
-        self.width = video.videoWidth;
-        self.height = video.videoHeight;
+        if(!this.video) {
+            this.video = document.createElement("video");
+            this.video.loop = true;
+            this.video.muted = true;
+            this.video.autoplay = true;
+            this.video.onload = () => {
+                this.video.play();
+            }
+        }
+        this.isVideo = true;
+        this.video.src = video;
+        this.video.play();
+        this.width = this.video.videoWidth;
+        this.height = this.video.videoHeight;
         this.update();
-        self.gl.texParameteri(self.gl.TEXTURE_2D, self.gl.TEXTURE_WRAP_S, self.gl.CLAMP_TO_EDGE);
-        self.gl.texParameteri(self.gl.TEXTURE_2D, self.gl.TEXTURE_WRAP_T, self.gl.CLAMP_TO_EDGE);
-        self.gl.texParameteri(self.gl.TEXTURE_2D, self.gl.TEXTURE_MIN_FILTER, self.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, self.gl.LINEAR);
     }
 
     update() {
         const self = this;    
-        if(this.video) {
+        if(this.isVideo && this.video != null) {
             this.gl.activeTexture(this.gl.TEXTURE0 + this.slot);
             const level = 0;
             const internalFormat = self.gl.RGBA;
@@ -1042,8 +1059,10 @@ export class Engine {
     setRenderTarget(frameBuffer){
         frameBuffer = frameBuffer || null;
         if(frameBuffer == null){
+            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
             this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         } else {
+            this.gl.viewport(0, 0, frameBuffer.textures[0].width, frameBuffer.textures[0].height);
             frameBuffer.bind();
         }
     }

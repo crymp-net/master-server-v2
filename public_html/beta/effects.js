@@ -18,6 +18,10 @@ class Effects {
      */
     constructor(output){
         this.engine = new Engine(output);
+        this.video = document.createElement("video");
+        this.video.autoplay = true;
+        this.video.muted = true;
+        this.video.loop = true;
         const engine = this.engine;
         const cursorPosition = [ 0, 0 ];
         const bbox = output.getBoundingClientRect()
@@ -90,12 +94,23 @@ class Effects {
             od: RaindropDistort,
             oi: RaindropImage
         };
+ 
+        this.video.onload = () => {
+            LU[target].loadVideo(this.video);
+        }
 
         document.querySelectorAll(".file-selector").forEach(sel => {
             const target = sel.id;
+
             sel.onchange = () => {
                 const files = sel.files;
-                LU[target].loadImage({ url: URL.createObjectURL(files[0]) })
+                if(files[0].type == "video/mp4") {
+                    this.video.src = URL.createObjectURL(files[0]);
+                    this.video.play()
+                    LU[target].loadVideo(this.video);
+                } else {
+                    LU[target].loadImage({ url: URL.createObjectURL(files[0]) })
+                }
             }
         })
 
@@ -121,6 +136,14 @@ class Effects {
 
         this.engine.onFrame( (engine, deltaTime) => {
             timePassed += deltaTime;
+
+            
+            for (const key in LU) {
+                if (Object.hasOwnProperty.call(LU, key)) {
+                    const element = LU[key];
+                    element.update();
+                }
+            }
 
             engine.setRenderTarget(DeferFB);
             engine.useProgram(program);
@@ -153,36 +176,6 @@ class Effects {
 
             entitiesProgram.getUniform("resolution").set(resolution);
             entitiesProgram.getUniform("cursor").set(cursorPosition);
-            
-            
-            /*
-            entities.forEach(entity => {
-                entityPosition.set([
-                    entity.x, 
-                    entity.y,
-                    (1.0 - entity.z) * 0.005,
-                    (1.0 - entity.z) * 0.07
-                ])
-                zinfo.set([
-                    entity.z,
-                    entity.life,
-                    0, 0
-                ])
-
-                entity.dy = Math.max(-2.5, entity.dy - deltaTime);
-                
-                entity.y += deltaTime * entity.dy;
-                entity.life += deltaTime;
-                
-                if(entity.y < -0.05) {
-                    entity.x = Math.random();
-                    entity.y = 1 + Math.random();
-                    entity.life /= 4.0;
-                }
-                
-                quad.draw(engine);
-            });
-            */
 
             entityPosition.set([0.5, 0.5, 1, 1])
             quad.draw(engine)

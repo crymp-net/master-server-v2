@@ -42,7 +42,6 @@ export class Uniform {
                 this.gl.uniform1i(this.location, value);
             }
         } else {
-            //console.log("wtf");
             this.gl["uniform" + type](this.location, value);
         }
     }
@@ -355,6 +354,7 @@ export class Texture2D {
         this.type = type;
         this.level = 0;
         this.border = 0;
+        this.video = null;
         this.normal = params.normal || false;
         this.slot = params.slot || 0;
 
@@ -417,6 +417,44 @@ export class Texture2D {
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
             this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        }
+    }
+
+    /**
+     * Load video
+     * @param {HTMLVideoElement} video 
+     */
+    loadVideo(video) {
+        const self = this;
+        this.video = video;
+        self.width = video.videoWidth;
+        self.height = video.videoHeight;
+        this.update();
+        self.gl.texParameteri(self.gl.TEXTURE_2D, self.gl.TEXTURE_WRAP_S, self.gl.CLAMP_TO_EDGE);
+        self.gl.texParameteri(self.gl.TEXTURE_2D, self.gl.TEXTURE_WRAP_T, self.gl.CLAMP_TO_EDGE);
+        self.gl.texParameteri(self.gl.TEXTURE_2D, self.gl.TEXTURE_MIN_FILTER, self.gl.LINEAR);
+    }
+
+    update() {
+        const self = this;    
+        if(this.video) {
+            this.gl.activeTexture(this.gl.TEXTURE0 + this.slot);
+            const level = 0;
+            const internalFormat = self.gl.RGBA;
+            const srcFormat = self.gl.RGBA;
+            const srcType = self.gl.UNSIGNED_BYTE;
+            self.gl.bindTexture(self.gl.TEXTURE_2D, self.texture);
+            self.gl.texImage2D(
+                self.gl.TEXTURE_2D,
+                level,
+                internalFormat,
+                srcFormat,
+                srcType,
+                this.video
+            );
+        } else {
+            this.gl.activeTexture(this.gl.TEXTURE0 + this.slot);
+            self.gl.bindTexture(self.gl.TEXTURE_2D, self.texture);
         }
     }
 

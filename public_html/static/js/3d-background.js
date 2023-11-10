@@ -91,10 +91,14 @@ function init3DBackground(){
     const output = document.getElementById("wrap");
 
     const imgId = output.getAttribute("data-image");
-    const fgPath = "/static/images/round_2/3D_FG" + imgId + ".jpg";
-    const depthPath = "/static/images/round_2/3D_DM" + imgId + ".jpg";
+    //const fgPath = "/static/images/round_2/3D_FG" + imgId + ".jpg";
+    //const depthPath = "/static/images/round_2/3D_DM" + imgId + ".jpg";
+
+    const fgPath = "/static/images/round_2/ICE_LOOP.mp4";
+    const depthPath = "/static/images/round_2/ICE_LOOP.jpg";
 
     const isVideo = fgPath.indexOf(".mp4") != -1;
+    let videoWithSeparateDepth = isVideo && depthPath != null;
 
     const loader = new PIXI.loaders.Loader();
     output.appendChild(renderer.view);
@@ -104,7 +108,7 @@ function init3DBackground(){
 
     let mouseX = w/2, mouseY = h/2;
     loader.add("diffuse", fgPath)
-    if(!isVideo) {
+    if(!isVideo || videoWithSeparateDepth) {
         loader.add("depth",  depthPath)
     }
     loader.once("complete", () => {
@@ -127,16 +131,17 @@ function init3DBackground(){
             dWidth = diffuse.texture.width;
             dHeight = diffuse.texture.height;
         }
-        const depth = loader.resources.depth;
-
-
-        const filter = new PIXI.Filter(null, isVideo ? VIDEO_SHADER : PICTURE_SHADER)
+        
+        const filter = new PIXI.Filter(null, isVideo && !videoWithSeparateDepth ? VIDEO_SHADER : PICTURE_SHADER)
 
         if(isVideo) {
             filter.uniforms.diffuse = diffuse;
+            if(videoWithSeparateDepth) {
+                filter.uniforms.depth = loader.resources.depth.texture;
+            }
         } else {
             filter.uniforms.diffuse = diffuse.texture;
-            filter.uniforms.depth = depth.texture;
+            filter.uniforms.depth = loader.resources.depth.texture;
         }
 
         function updateStage() {
@@ -160,24 +165,25 @@ function init3DBackground(){
                 mouseX / window.innerWidth,
                 mouseY / window.innerHeight
             ];
-            renderer.render(stage);       
+            renderer.render(stage);  
+            requestAnimationFrame(animate);     
         }
 
         window.addEventListener("resize", () => {
             updateStage();
-            requestAnimationFrame(animate)
+            //requestAnimationFrame(animate)
         })
         window.addEventListener("mousemove", (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
-            requestAnimationFrame(animate);
+            //requestAnimationFrame(animate);
         })
         window.addEventListener("touchmove", (e) => {
             if(e.touches.length < 1) return;
             const t = e.touches[0]
             mouseX = t.clientX;
             mouseY = t.clientY;
-            requestAnimationFrame(animate);
+            //requestAnimationFrame(animate);
         })
         requestAnimationFrame(animate);
     });

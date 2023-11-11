@@ -125,8 +125,9 @@ end
 
 --- To public server entity that can be used in API responses
 ---@param server server_object server to be sanitized
+---@param index integer server index
 ---@param own_ip string|nil ip of requester
-function api.toPublic(server, own_ip)
+function api.toPublic(server, index, own_ip)
     local players = crymp:exportPlayers(server.source == "http" and server.players or server.gamespyPlayers)
     local map = (server.map or "multiplayer/ps/mesa"):lower()
     local mapName = server.mapName or (map:sub(16))

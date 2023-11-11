@@ -12,7 +12,7 @@
             write(encode({error = "not available"}))
         else
             local ip = aio:get_ip(fd)
-            local response = crymp.api.toPublic(server, ip)
+            local response = crymp.api.toPublic(server, 0, ip)
             if locals.legacy then response = {response} end
             write(encode(response))
         end

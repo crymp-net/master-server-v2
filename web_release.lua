@@ -62,6 +62,15 @@ aio:stream_http_post("/api/v2_release", function (fd, query_, headers, body)
         local files_ok = {}
         local found_32, found_64 = false, false
         local file_sum = 0
+
+        if ctx == "dev" then
+            commit_hash = "d-" .. commit_hash
+        elseif ctx == "release" then
+            commit_hash = "r-" .. commit_hash
+        else
+            commit_hash = "u-" .. commit_hash
+        end
+
         if files then
             for _, file in ipairs(files) do
                 if not tonumber(file.size) or not file.name then

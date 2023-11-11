@@ -91,11 +91,13 @@ function init3DBackground(){
     const output = document.getElementById("wrap");
 
     const imgId = output.getAttribute("data-image");
-    const fgPath = "/static/images/round_2/3D_FG" + imgId + ".jpg";
-    const depthPath = "/static/images/round_2/3D_DM" + imgId + ".jpg";
+    let fgPath = "/static/images/round_2/3D_FG" + imgId + ".jpg";
+    let depthPath = "/static/images/round_2/3D_DM" + imgId + ".jpg";
 
-    //const fgPath = "/static/images/round_2/ICE_LOOP.mp4";
-    //const depthPath = "/static/images/round_2/ICE_LOOP.jpg";
+    if(imgId == "-1") {
+        fgPath = "/static/images/round_2/ICE_LOOP.mp4";
+        depthPath = "/static/images/round_2/ICE_LOOP.jpg";
+    }
 
     const isVideo = fgPath.indexOf(".mp4") != -1;
     let videoWithSeparateDepth = isVideo && depthPath != null;

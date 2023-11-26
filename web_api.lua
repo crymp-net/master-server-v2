@@ -343,7 +343,9 @@ function api:upsertServer(params)
                             if params.source == "http" then
                                 self:updateStatistics(params, existingServer, timeDelta)(function (stats)
                                     if iserror(stats) and not stats.old then
-                                        print("failed to update player stats: ", stats.error, "data: ", codec.json_encode({
+                                        print("failed to update player stats: ", stats.error)
+                                        print("query: ", stats.original_query)
+                                        print(codec.json_encode({
                                             params = params,
                                             existingServer = existingServer,
                                             timeDelta = timeDelta

@@ -62,6 +62,30 @@ function api:toServerUpdate(query, ip, port, source)
     port = port or 64087
     query.players = query.players or ""
     local ok = true
+    if type(query.players) == "table" then
+        local playerString = {}
+        if #query.players > 0 then playerString[#playerString+1] = "@" end
+        for i, player in ipairs(query.players) do
+            local team = player.team or 0
+            if player.name then
+                player.kills = tonumber(player.kills or 0) or 0
+                player.deaths = tonumber(player.deaths or 0) or 0
+                player.rank = tonumber(player.rank or 0) or 0
+                player.profile_id = tostring(player.profile_id or 0)
+                if type(team) == "string" then
+                    if team == "us" then
+                        team = 2 
+                    elseif team == "nk" then
+                        team = 1
+                    else
+                        team = 0
+                    end
+                end
+                playerString[#playerString+1] = string.format("%s%%%d%%%d%%%d%%%s%%%d", player.name or "Nomad", player.rank or 0, player.kills or 0, player.deaths or 0, player.profile_id or 0, team)
+            end
+        end
+        query.players = table.join(playerString, "@")
+    end
     local nPlayers = #crymp:exportPlayers(query.players)
     local behindProxy = false
     local required = {

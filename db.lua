@@ -44,6 +44,7 @@ end
 --- @field gamepadsOnly boolean
 --- @field friendlyFire boolean
 --- @field isReal boolean
+--- @field rules string
 
 --- @type ormrepo
 local servers = orm:create(sql, {
@@ -87,6 +88,7 @@ local servers = orm:create(sql, {
         timeLeft = { field = "time_left", type = orm.t.int },
         uptime = { field = "uptime", type = orm.t.int },
         voiceChat = { field = "voice_chat", type = orm.t.bit },
+        rules = { field = "rules", type = orm.t.varchar(40) }
     },
     findByIpPort = true,
     findByIsReal = true,

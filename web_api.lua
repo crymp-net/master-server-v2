@@ -106,6 +106,23 @@ function api:toServerUpdate(query, ip, port, source)
         end
     end
 
+    local rules = query["rules"]
+
+    if rules == nil then
+        if query["map"] ~= nil then
+            local map = query["map"]:lower()
+            if map:find("/ps/") then
+                rules = "PowerStruggle"
+            elseif map:find("/ia/") then
+                rules = "InstantAction"
+            elseif map:find("/tia/") then
+                rules = "TeamInstantAction"
+            end
+        end
+    end
+
+    rules = rules or ""
+
     local obj = {
         behindProxy = behindProxy,
         source = source,
@@ -133,7 +150,8 @@ function api:toServerUpdate(query, ip, port, source)
         dedicated = query["dedicated"] and query["dedicated"] == "1" or nil,
         antiCheat = query["anticheat"] and query["anticheat"] == "1" or nil,
         gamepadsOnly = query["gamepadsonly"] and query["gamepadsonly"] == "1" or nil,
-        friendlyFire = query["friendlyfire"] and query["friendlyfire"] == "1" or nil
+        friendlyFire = query["friendlyfire"] and query["friendlyfire"] == "1" or nil,
+        rules = rules
     }
     for _, i in ipairs(required) do
         if obj[i] == nil then
@@ -217,7 +235,8 @@ function api.toPublic(server, index, own_ip)
         rating = server.rating,
         source = server.source or "http",
 
-        gs = server.dx10 ~= nil
+        gs = server.dx10 ~= nil,
+        rules = server.rules
     }
 end
 

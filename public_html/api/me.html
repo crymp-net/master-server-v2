@@ -1,6 +1,7 @@
 <?include ../shared.priv.html ?>
 <?lu
     if session.logged then
+        header("content-type", "application/json")
         write({
             id = session.logged.id,
             name = session.logged.nick,

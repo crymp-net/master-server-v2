@@ -1,0 +1,12 @@
+<?include ../shared.priv.html ?>
+<?lu
+    if session.logged then
+        write({
+            id = session.logged.id,
+            name = session.logged.nick,
+            display = session.logged.display
+        })
+    else
+        status("401 Unauthorized")
+    end
+?>

@@ -254,7 +254,12 @@ function api:guessMapName(map)
             table.insert(parts, part:sub(1, 1):upper() .. part:sub(2))
         end
     end
-    return table.concat(parts, " ")
+    local finalName = table.concat(parts, " ")
+    local pre, post = finalName:match("(.+)%|(.+)")
+    if pre and post then
+        return pre
+    end
+    return finalName
 end
 
 --- Upsert map into repo

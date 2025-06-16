@@ -78,7 +78,7 @@
         | <div class="hidden-xs hidden-sm serverlist-large">
         for i, server in ipairs(servers) do
             local online = server.numPlayers
-            local map_sanitized = (server.map or ""):lower():gsub("/", "_")
+            local map_sanitized = (server.map or ""):lower():gsub("/", "_"):gsub("%|(.+)$", "")
             local possible_path = "/static/images/maps/" .. map_sanitized .. ".jpg"
         |   <div class="serveritem-large">
         |       <div class="flex-full">

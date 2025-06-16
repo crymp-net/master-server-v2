@@ -11,7 +11,7 @@
             | <h1>Server is not online</h1>
         else
             locals.title = server.name
-            local map_sanitized = (server.map or ""):lower():gsub("/", "_")
+            local map_sanitized = (server.map or ""):lower():gsub("/", "_"):gsub("%|.+", "")
             local possible_path = "/static/images/maps/" .. map_sanitized .. ".jpg"
             local ranks = {"PRI", "COR", "SGT", "LT", "CPT", "MAJ", "COL", "GEN"}
             local top10 = nil

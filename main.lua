@@ -256,7 +256,7 @@ function crymp:exportPlayers(text)
     text = text or ""
     if #text < 2 then return {} end
     for player in text:gmatch("%@([^@]+)") do
-        local name, rank, kills, deaths, pid = player:match("(.-)%%(%d+)%%(%d+)%%(%d+)%%(.+)")
+        local name, rank, kills, deaths, pid = player:match("(.-)%%([0-9%-]+)%%(%d+)%%(%d+)%%(.+)")
         if name and rank and kills and deaths and pid then
             local team =nil
             if pid:find("%%") then

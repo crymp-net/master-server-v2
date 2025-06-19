@@ -10,6 +10,7 @@ aio:set_dns(dns)
 aio:set_max_cache_size(100000)
 
 SMTP_CLIENT = true
+monitor_stats = false
 
 local prev_stats = nil
 if crymp then
@@ -29,6 +30,7 @@ crymp = {
         gsServerUpdates = {total = 0, count = 0, medians = {}}
     },
     record_stat = function(self, key, value)
+        if not monitor_stats then return end
         if self.stats[key] then
             self.stats[key].total = self.stats[key].total + value
             self.stats[key].count = self.stats[key].count + 1
@@ -40,6 +42,7 @@ crymp = {
         end
     end,
     collect_stats = function(self)
+        if not monitor_stats then return end
         for i, v in pairs(self.stats) do
             self.stats[i].average = self.stats[i].total / math.max(1, self.stats[i].count)
             table.sort(self.stats[i].medians)
@@ -57,6 +60,7 @@ crymp = {
         return self.stats
     end,
     reset_stats = function(self)
+        if not monitor_stats then return end
         for i, v in pairs(self.stats) do
             self.stats[i] = {total = 0, count = 0, medians={}}
         end

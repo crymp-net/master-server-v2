@@ -196,7 +196,14 @@ end
 ---@param map string map name
 ---@return string rules
 function crymp:getGameRules(map)
-    local rules = (map or "multiplayer/ps/mesa"):match("/ps/") and "Power Struggle" or "Instant Action"
+    local rules = "Power Struggle"
+    if map:find("/ps/") then
+        rules = "Power Struggle"
+    elseif map:find("/ia/") then
+        rules = "Instant Action"
+    elseif map:find("/tia/") then
+        rules = "Team Instant Action"
+    end
     return rules
 end
 

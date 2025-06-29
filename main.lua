@@ -195,8 +195,11 @@ end
 --- Get game rules from map name
 ---@param map string map name
 ---@return string rules
-function crymp:getGameRules(map)
+function crymp:getGameRules(map, existingRules)
     local rules = "Power Struggle"
+    if existingRules and existingRules ~= "PowerStruggle" and existingRules ~= "InstantAction" then
+        return existingRules
+    end
     if map:find("/ps/") then
         rules = "Power Struggle"
     elseif map:find("/ia/") then

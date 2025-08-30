@@ -278,6 +278,12 @@ function api:upsertMap(params)
     if url and #url > 0 then
         url = url:gsub("^https?://", "")
         credible = url:find("nullptr.one/", 1, nil) ~= nil
+        if not credible then
+            credible = url:find("kyong.comrade.one/", 1, nil) ~= nil
+        end
+        if not credible then
+            credible = url:find("crymp.org/maps/", 1, nil) ~= nil
+        end
     end
     if standard_maps[mapPath] then
         resolve("")

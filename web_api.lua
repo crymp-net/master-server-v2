@@ -272,7 +272,7 @@ function api:upsertMap(params)
     local url = params.mapDownloadLink
     local credible = false
     if mapPath:find("|", 1, false) then
-        version, mapPath = mapPath:match("^(.-)|(.+)$")
+        mapPath, version = mapPath:match("^(.-)|(.+)$")
     end
     mapPath = mapPath:lower():gsub("^%s*", ""):gsub("%s*$", "")
     if url and #url > 0 then

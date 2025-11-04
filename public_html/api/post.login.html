@@ -25,7 +25,7 @@
     end
 
     if handle ~= nil and pass ~= nil then
-        local result = await(crymp.api:login(handle, pass))
+        local result = await(crymp.api:login(handle, pass, nil, true))
         if result ~= nil then
             if iserror(result) then status("401 Unauthorized") end
             write(encode(locals, result))

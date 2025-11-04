@@ -458,8 +458,9 @@ end
 ---@param time string|number time when token was issued
 ---@param nickname string player nickname
 ---@param name string player display name
+---@param time number|nil played time
 ---@return table
-function api:issueToken(profileId, time, nickname, name)
+function api:issueToken(profileId, time, nickname, name, time)
     name = name or "Nomad"
     nickname = nickname or "Nomad"
     profileId = tostring(profileId)
@@ -470,7 +471,8 @@ function api:issueToken(profileId, time, nickname, name)
         id = profileId,
         token = codec.hex_encode(crypto.hmac_sha256(signing, TOKEN_SALT)) .. "_" .. time,
         nickname = nickname,
-        name = name
+        name = name,
+        time = time
     }
 end
 
@@ -594,7 +596,7 @@ end
 ---@param password string password secured password or token for staticID
 ---@param strict boolean|nil if true, only real users with real password are accepted
 ---@return aiopromise<table> ok
-function api:login(user, password, strict)
+function api:login(user, password, strict, playedTime)
     strict = strict or false
     if not strict then
         crymp:record_stat("logins", 1)
@@ -612,7 +614,13 @@ function api:login(user, password, strict)
         local profileId = user:sub(6)
         local staticIdSign = self:staticIDToken(profileId)
         if password == staticIdSign then
-            resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad"))
+            if playedTime then
+                crymp:getStatistics({ profileId = tonumber(profileId) })(function(stats)
+                    resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad", stats.playedTime or 0))
+                end)
+            else
+                resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad"))
+            end
         else
             resolve(nil)
         end
@@ -642,7 +650,14 @@ function api:login(user, password, strict)
                 if not upResult or iserror(upResult) then
                     resolve({error = "database error"})
                 else
-                    resolve(result)
+                    if playedTime then
+                        crymp:getStatistics({ profileId = user.id })(function(stats)
+                            result.time = stats.playedTime or 0
+                            resolve(result)
+                        end)
+                    else
+                        resolve(result)
+                    end
                 end
             end)
         end
@@ -662,9 +677,11 @@ end
 ---@param locale string
 ---@param tz number
 ---@param clientVer string
+---@param playedTime boolean
 ---@return aiopromise<table>
-function api:getStaticID(hardwareId, locale, tz, clientVer)
+function api:getStaticID(hardwareId, locale, tz, clientVer, playedTime)
     local resolve, resolver = aio:prepare_promise()
+    local time = 0
     db.staticIds.one:byHwid(hardwareId)(function (result)
         if iserror(result) then
             resolve(nil)
@@ -677,7 +694,13 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
                 tz = tz or result.tz or 0,
                 clientVersion = clientVer,
             })(function (result)
-                resolve({id = profileId, token=self:staticIDToken(profileId)})
+                if playedTime then
+                    crymp:getStatistics({ profileId = result.id + 1000000 })(function(stats)
+                        resolve({id = profileId, token=self:staticIDToken(profileId), time=stats.playedTime or 0})
+                    end)
+                else
+                    resolve({id = profileId, token=self:staticIDToken(profileId), time=0})
+                end
             end)
         else
             db.staticIds:insert({
@@ -694,7 +717,7 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
                     resolve(nil)
                 else
                     local profileId = tostring(result.last_insert_id + 1000000)
-                    resolve({id = profileId, token=self:staticIDToken(profileId)})
+                    resolve({id = profileId, token=self:staticIDToken(profileId), time=0})
                 end
             end)
         end

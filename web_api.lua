@@ -694,13 +694,7 @@ function api:getStaticID(hardwareId, locale, tz, clientVer, playedTime)
                 tz = tz or result.tz or 0,
                 clientVersion = clientVer,
             })(function (result)
-                if playedTime then
-                    crymp:getStatistics({ profileId = result.id + 1000000 })(function(stats)
-                        resolve({id = profileId, token=self:staticIDToken(profileId), time=stats.playedTime or 0})
-                    end)
-                else
-                    resolve({id = profileId, token=self:staticIDToken(profileId), time=0})
-                end
+                resolve({id = profileId, token=self:staticIDToken(profileId), time=0})
             end)
         else
             db.staticIds:insert({

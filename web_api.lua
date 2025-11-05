@@ -460,7 +460,7 @@ end
 ---@param name string player display name
 ---@param time number|nil played time
 ---@return table
-function api:issueToken(profileId, time, nickname, name, time)
+function api:issueToken(profileId, time, nickname, name)
     name = name or "Nomad"
     nickname = nickname or "Nomad"
     profileId = tostring(profileId)

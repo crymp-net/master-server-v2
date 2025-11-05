@@ -614,13 +614,7 @@ function api:login(user, password, strict, playedTime)
         local profileId = user:sub(6)
         local staticIdSign = self:staticIDToken(profileId)
         if password == staticIdSign then
-            if playedTime then
-                crymp:getStatistics({ profileId = tonumber(profileId) })(function(stats)
-                    resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad", stats.playedTime or 0))
-                end)
-            else
-                resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad"))
-            end
+            resolve(self:issueToken(profileId, os.time(), "Nomad", "Nomad"))
         else
             resolve(nil)
         end

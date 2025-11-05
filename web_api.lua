@@ -460,7 +460,7 @@ end
 ---@param name string player display name
 ---@param time number|nil played time
 ---@return table
-function api:issueToken(profileId, time, nickname, name)
+function api:issueToken(profileId, time, nickname, name, playedTime)
     name = name or "Nomad"
     nickname = nickname or "Nomad"
     profileId = tostring(profileId)
@@ -472,7 +472,7 @@ function api:issueToken(profileId, time, nickname, name)
         token = codec.hex_encode(crypto.hmac_sha256(signing, TOKEN_SALT)) .. "_" .. time,
         nickname = nickname,
         name = name,
-        time = time
+        time = playedTime or 0
     }
 end
 
@@ -644,7 +644,10 @@ function api:login(user, password, strict)
                 if not upResult or iserror(upResult) then
                     resolve({error = "database error"})
                 else
-                    resolve(result)
+                    crymp:getStatistics({profileId = user.id})(function(stats)
+                        result.time = stats.playedTime                
+                        resolve(result)
+                    end)
                 end
             end)
         end

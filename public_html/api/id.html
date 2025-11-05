@@ -16,7 +16,7 @@
     local clientVer = query.ver or headers["x-sfwcl-ver"] or "17"
     local id, signature = hwid:match("([0-9A-Fa-f]+):([0-9A-Fa-f]+)")
     if id and signature and #id == 64 and #signature == 64 and hash(id .. "idsvc"):lower() == signature:lower() then
-        local result = await(crymp.api:getStaticID(id, locale, tz, clientVer))
+        local result = await(crymp.api:getStaticID(id, locale, tz, clientVer, true))
         if not result then
             status("500 Internal server error")
             return write(encode(locals, {error="server error"}))

@@ -458,8 +458,9 @@ end
 ---@param time string|number time when token was issued
 ---@param nickname string player nickname
 ---@param name string player display name
+---@param time number|nil played time
 ---@return table
-function api:issueToken(profileId, time, nickname, name)
+function api:issueToken(profileId, time, nickname, name, time)
     name = name or "Nomad"
     nickname = nickname or "Nomad"
     profileId = tostring(profileId)
@@ -470,7 +471,8 @@ function api:issueToken(profileId, time, nickname, name)
         id = profileId,
         token = codec.hex_encode(crypto.hmac_sha256(signing, TOKEN_SALT)) .. "_" .. time,
         nickname = nickname,
-        name = name
+        name = name,
+        time = time
     }
 end
 
@@ -662,9 +664,11 @@ end
 ---@param locale string
 ---@param tz number
 ---@param clientVer string
+---@param playedTime boolean
 ---@return aiopromise<table>
-function api:getStaticID(hardwareId, locale, tz, clientVer)
+function api:getStaticID(hardwareId, locale, tz, clientVer, playedTime)
     local resolve, resolver = aio:prepare_promise()
+    local time = 0
     db.staticIds.one:byHwid(hardwareId)(function (result)
         if iserror(result) then
             resolve(nil)
@@ -677,7 +681,7 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
                 tz = tz or result.tz or 0,
                 clientVersion = clientVer,
             })(function (result)
-                resolve({id = profileId, token=self:staticIDToken(profileId)})
+                resolve({id = profileId, token=self:staticIDToken(profileId), time=0})
             end)
         else
             db.staticIds:insert({
@@ -694,7 +698,7 @@ function api:getStaticID(hardwareId, locale, tz, clientVer)
                     resolve(nil)
                 else
                     local profileId = tostring(result.last_insert_id + 1000000)
-                    resolve({id = profileId, token=self:staticIDToken(profileId)})
+                    resolve({id = profileId, token=self:staticIDToken(profileId), time=0})
                 end
             end)
         end

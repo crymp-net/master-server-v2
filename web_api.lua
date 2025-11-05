@@ -596,7 +596,7 @@ end
 ---@param password string password secured password or token for staticID
 ---@param strict boolean|nil if true, only real users with real password are accepted
 ---@return aiopromise<table> ok
-function api:login(user, password, strict, playedTime)
+function api:login(user, password, strict)
     strict = strict or false
     if not strict then
         crymp:record_stat("logins", 1)
@@ -644,14 +644,7 @@ function api:login(user, password, strict, playedTime)
                 if not upResult or iserror(upResult) then
                     resolve({error = "database error"})
                 else
-                    --[[if playedTime then
-                        crymp:getStatistics({ profileId = user.id })(function(stats)
-                            result.time = stats.playedTime or 0
-                            resolve(result)
-                        end)
-                    else--]]
-                        resolve(result)
-                    --end
+                    resolve(result)
                 end
             end)
         end

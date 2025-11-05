@@ -644,14 +644,14 @@ function api:login(user, password, strict, playedTime)
                 if not upResult or iserror(upResult) then
                     resolve({error = "database error"})
                 else
-                    if playedTime then
+                    --[[if playedTime then
                         crymp:getStatistics({ profileId = user.id })(function(stats)
                             result.time = stats.playedTime or 0
                             resolve(result)
                         end)
-                    else
+                    else--]]
                         resolve(result)
-                    end
+                    --end
                 end
             end)
         end

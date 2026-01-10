@@ -778,14 +778,14 @@ function api:getReleaseByCommit(release_type, commit)
                         arch = 32,
                         hash = result.hash32,
                         path = "CryMP-Client32.exe",
-                        url = "https://crymp.nullptr.one/static/releases/" .. result.commit .. "/CryMP-Client32.exe"
+                        url = "https://crymp.org/static/releases/" .. result.commit .. "/CryMP-Client32.exe"
                     },
                     {
                         type = "exe",
                         arch = 64,
                         hash = result.hash64,
                         path = "CryMP-Client64.exe",
-                        url = "https://crymp.nullptr.one/static/releases/" .. result.commit .. "/CryMP-Client64.exe"
+                        url = "https://crymp.org/static/releases/" .. result.commit .. "/CryMP-Client64.exe"
                     }
                 }
             })

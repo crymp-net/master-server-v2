@@ -9,6 +9,11 @@ local dns = require("aio.lib.dns")
 aio:set_dns(dns)
 aio:set_max_cache_size(100000)
 
+local ip_header = os.getenv("IP_HEADER")
+if ip_header ~= nil then
+    aio:set_ip_header(ip_header)
+end
+
 SMTP_CLIENT = true
 monitor_stats = false
 

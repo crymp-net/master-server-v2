@@ -207,13 +207,12 @@ function api.toPublic(server, index, own_ip)
         own = server.ip == own_ip
     end
 
-    local teams = 2
-    if server.teams == nil or server.teams < 1 then
+    if server.teams == nil then
         local rules = server.rules or "PowerStruggle"
         if rules == "PowerStruggle" or rules == "TeamInstantAction" then
-            teams = 2
+            server.teams = 2
         else
-            teams = 1
+            server.teams = 1
         end
     end
 
@@ -259,7 +258,7 @@ function api.toPublic(server, index, own_ip)
 
         gs = server.dx10 ~= nil,
         rules = server.rules,
-        teams = teams
+        teams = server.teams
     }
 end
 

@@ -107,6 +107,7 @@ function api:toServerUpdate(query, ip, port, source)
     end
 
     local rules = query["rules"]
+    local teams = query["teams"]
 
     if rules == nil then
         if query["map"] ~= nil then
@@ -122,6 +123,14 @@ function api:toServerUpdate(query, ip, port, source)
     end
 
     rules = rules or ""
+
+    if teams == nil then
+        if rules == "PowerStruggle" or rules == "TeamInstantAction" then
+            teams = 2
+        else
+            teams = 1
+        end
+    end
 
     local obj = {
         behindProxy = behindProxy,
@@ -151,7 +160,8 @@ function api:toServerUpdate(query, ip, port, source)
         antiCheat = query["anticheat"] and query["anticheat"] == "1" or nil,
         gamepadsOnly = query["gamepadsonly"] and query["gamepadsonly"] == "1" or nil,
         friendlyFire = query["friendlyfire"] and query["friendlyfire"] == "1" or nil,
-        rules = rules
+        rules = rules,
+        teams = teams
     }
     for _, i in ipairs(required) do
         if obj[i] == nil then
@@ -188,11 +198,23 @@ function api.toPublic(server, index, own_ip)
         local hit = gamespyLookup[player.name]
         if player.team == nil and hit ~= nil then
             player.team = hit
+        elseif player.team == nil then
+            player.team = 1
         end
     end
 
     if own_ip ~= nil then
         own = server.ip == own_ip
+    end
+
+    local teams = 2
+    if server.teams == nil or server.teams < 1 then
+        local rules = server.rules or "PowerStruggle"
+        if rules == "PowerStruggle" or rules == "TeamInstantAction" then
+            teams = 2
+        else
+            teams = 1
+        end
     end
 
     return {
@@ -236,7 +258,8 @@ function api.toPublic(server, index, own_ip)
         source = server.source or "http",
 
         gs = server.dx10 ~= nil,
-        rules = server.rules
+        rules = server.rules,
+        teams = teams
     }
 end
 

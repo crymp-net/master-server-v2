@@ -88,7 +88,8 @@ local servers = orm:create(sql, {
         timeLeft = { field = "time_left", type = orm.t.int },
         uptime = { field = "uptime", type = orm.t.int },
         voiceChat = { field = "voice_chat", type = orm.t.bit },
-        rules = { field = "rules", type = orm.t.varchar(40) }
+        rules = { field = "rules", type = orm.t.varchar(40) },
+        teams = { field = "teams", type = orm.t.int }
     },
     findByIpPort = true,
     findByIsReal = true,

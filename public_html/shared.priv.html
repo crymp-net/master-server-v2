@@ -12,4 +12,7 @@
             end
         end
     end
+    if method == "GET" and (headers["accept-language"] or "en"):find("ru") then
+        header("location", "https://proxy.crymp.org" .. endpoint)
+    end
 ?>

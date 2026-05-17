@@ -12,7 +12,7 @@
             end
         end
     end
-    if method == "GET" and (headers["accept-language"] or "en"):find("ru") then
+    if method == "GET" and aio.ip_header and not headers[aio.ip_header] and (headers["accept-language"] or "en"):find("ru") then
         header("location", "https://proxy.crymp.org" .. endpoint)
     end
 ?>

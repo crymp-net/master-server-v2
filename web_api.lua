@@ -607,6 +607,9 @@ function api:validateToken(profileId, token)
             local tok = token:sub(2):lower()
             local base = self:staticIDToken(tostring(profileId))
             return hash("S" .. base .. "ID") == tok
+        elseif #token == 40 and tonumber(profileId) >= 100000 then
+            local base = self:staticIDToken(tostring(profileId))
+            return base == token
         else
             return false
         end

@@ -637,7 +637,7 @@ end
 --- Encode forum post into HTML
 ---@param text string original text
 ---@return string text encoded as HTML
-function web:encodePostText(text)
+function web:encodePostTextOld(text)
     return aio:cached("post", text, function()
         text = codec.html_encode(text)
         
@@ -673,6 +673,164 @@ function web:encodePostText(text)
         end)
 
         return text
+    end)
+end
+
+--- Encode forum post into HTML
+---@param text string original text
+---@return string text encoded as HTML
+function web:encodePostText(text)
+    return aio:cached("post", text, function()
+        local function html_escape(s)
+            return codec.html_encode(s)
+        end
+
+        local function safe_http_url(url)
+            url = (url or ""):match("^%s*(.-)%s*$")
+            return url ~= "" and url:match("^https?://") ~= nil and not url:find("[%s<>\"']")
+        end
+
+        local function extract_youtube_id(raw)
+            raw = (raw or ""):match("^%s*(.-)%s*$")
+
+            local id = raw:match("^https?://youtu%.be/([%w%-%_]+)")
+                or raw:match("^https?://www%.youtube%.com/watch%?v=([%w%-%_]+)")
+                or raw:match("^([%w%-%_]+)$")
+
+            return id
+        end
+
+        local function make_link(url)
+            return string.format(
+                '<a href="%s" target="_blank" rel="nofollow noopener noreferrer">%s</a>',
+                url, url
+            )
+        end
+
+        local function make_img(url)
+            return string.format(
+                '<a href="%s" target="_blank" rel="nofollow noopener noreferrer"><img src="%s" style="max-width:100%%;cursor:pointer;" alt=""></a>',
+                url, url
+            )
+        end
+
+        local function make_yt(id)
+            return string.format(
+                '<iframe style="max-width:100%%" width="800" height="480" src="https://www.youtube.com/embed/%s?feature=player_embedded" frameborder="0" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
+                id
+            )
+        end
+
+        local placeholders = {}
+
+        local function token(html)
+            local id = #placeholders + 1
+            placeholders[id] = html
+            return ("\1%d\2"):format(id)
+        end
+
+        local function restore_tokens(s)
+            return (s:gsub("\1(%d+)\2", function(id)
+                return placeholders[tonumber(id)] or ""
+            end))
+        end
+
+        local function wrap_tag(s, tag, open_html, close_html)
+            local pattern = "%[" .. tag .. "%]([%s%S]-)%[/" .. tag .. "%]"
+            return (s:gsub(pattern, function(inner)
+                return open_html .. inner .. close_html
+            end))
+        end
+
+        local function linkify_urls(s)
+            local out = {}
+            local i = 1
+
+            while i <= #s do
+                local p_https = s:find("https://", i, true)
+                local p_http = s:find("http://", i, true)
+
+                local p
+                if p_https and p_http then
+                    p = math.min(p_https, p_http)
+                else
+                    p = p_https or p_http
+                end
+
+                if not p then
+                    out[#out + 1] = s:sub(i)
+                    break
+                end
+
+                if p > i then
+                    out[#out + 1] = s:sub(i, p - 1)
+                end
+
+                local j = p
+                while j <= #s do
+                    local ch = s:sub(j, j)
+                    if ch:match("[%s<>\"\r\n\t]") then
+                        break
+                    end
+                    j = j + 1
+                end
+
+                local url = s:sub(p, j - 1)
+                if safe_http_url(url) then
+                    out[#out + 1] = make_link(url)
+                else
+                    out[#out + 1] = url
+                end
+
+                i = j
+            end
+
+            return table.concat(out)
+        end
+
+        local result = html_escape(text)
+
+        -- Protect content that must not be linkified or recursively parsed.
+        result = result:gsub("%[code%]([%s%S]-)%[/code%]", function(inner)
+            return token("<code>" .. inner .. "</code>")
+        end)
+
+        result = result:gsub("%[img%]([%s%S]-)%[/img%]", function(inner)
+            local url = (inner or ""):match("^%s*(.-)%s*$")
+            if safe_http_url(url) then
+                return token(make_img(url))
+            end
+            return "[img]" .. inner .. "[/img]"
+        end)
+
+        result = result:gsub("%[yt%]([%s%S]-)%[/yt%]", function(inner)
+            local id = extract_youtube_id(inner)
+            if id then
+                return token(make_yt(id))
+            end
+            return "[yt]" .. inner .. "[/yt]"
+        end)
+
+        -- Regular formatting tags.
+        result = wrap_tag(result, "quote", '<div class="quote">', "</div>")
+        result = wrap_tag(result, "b", "<b>", "</b>")
+        result = wrap_tag(result, "u", "<u>", "</u>")
+        result = wrap_tag(result, "i", "<i>", "</i>")
+        result = wrap_tag(result, "small", "<small>", "</small>")
+        result = wrap_tag(result, "h1", "<h1>", "</h1>")
+        result = wrap_tag(result, "h2", "<h2>", "</h2>")
+        result = wrap_tag(result, "h3", "<h3>", "</h3>")
+
+        -- [url]...[/url] keeps the text, which then gets safely auto-linked if it is a URL.
+        result = result:gsub("%[url%]([%s%S]-)%[/url%]", "%1")
+
+        -- Linkify plain URLs without touching generated HTML snippets.
+        result = linkify_urls(result)
+
+        -- Restore protected HTML.
+        result = restore_tokens(result)
+
+        return result
     end)
 end
 

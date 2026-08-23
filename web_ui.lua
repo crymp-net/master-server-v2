@@ -870,4 +870,39 @@ function web:getTop10(ip, port)
     return resolver
 end
 
+--- Update profile picture of a user
+---@param user any user
+---@param rawData string jpeg data
+---@return any profile picture path
+function web:updateProfilePicture(user, rawData)
+    local resolve, resolver = aio:prepare_promise()
+    local before = user.picture
+    local path = "static/ucg/profile/" .. hash(string.format("%d:profile:%s", user.id, os.date())) .. ".jpg"
+    local f, err = io.open(path, "wb")
+    if not f then
+        resolve({error = "Write error"})
+    else
+        f:write(rawData)
+        f:close()
+
+        if before ~= nil and before ~= "" and before ~= "0" then
+            local path = self:getPicture(user)
+            if not path:find(".png") then
+                os.remove(path)
+            end
+        end
+
+        db.users:update(user, {
+            picture = path
+        })(function(result)
+            if not iserror(result) then
+                resolve({path = path})
+            else
+                resolve({error = "Database errror"})
+            end
+        end)
+    end
+    return resolver
+end
+
 return web

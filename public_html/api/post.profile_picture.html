@@ -1,0 +1,26 @@
+<?include ../shared.priv.html ?><?lu
+    header("content-type", "application/json; charset=utf-8")    
+    if session.logged and query.e and tonumber(query.e.user) == session.logged.id then
+        if jpeg and jpeg.resize then
+            local ok, result = pcall(jpeg.resize, body, 240 * 240)
+            if ok then
+                local update = await(crymp.web:updateProfilePicture(session.logged, result))
+                if iserror(pictureUpdate) then
+                    status("500 Internal server error")
+                    write(update)
+                else
+                    write(update)
+                end
+            else
+                status("500 Internal server error")
+                write({error = "Failed to resize the image"})
+            end
+        else
+            status("500 Internal server error")
+            write({error = "Failed to resize the image"})
+        end
+    else
+        status("400 Bad request")
+        write({error = "Invalid session"})
+    end
+?>

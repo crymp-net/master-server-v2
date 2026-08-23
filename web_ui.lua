@@ -878,7 +878,7 @@ function web:updateProfilePicture(user, rawData)
     local resolve, resolver = aio:prepare_promise()
     local before = user.picture
     local path = "static/ucg/profile/" .. hash(string.format("%d:profile:%s", user.id, os.date())) .. ".jpg"
-    local f, err = io.open(path, "wb")
+    local f, err = io.open("crymp/public_html/" .. path, "wb")
     if not f then
         resolve({error = "Write error"})
     else

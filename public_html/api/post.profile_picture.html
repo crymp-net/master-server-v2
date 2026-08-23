@@ -2,7 +2,7 @@
     header("content-type", "application/json; charset=utf-8")    
     if session.logged and query.e and tonumber(query.e.user) == session.logged.id then
         if jpeg and jpeg.resize then
-            local ok, result = pcall(jpeg.resize, body, 240 * 240)
+            local ok, result = pcall(jpeg.resize, body, 480 * 480)
             if ok then
                 local update = await(crymp.web:updateProfilePicture(session.logged, result))
                 if iserror(pictureUpdate) then

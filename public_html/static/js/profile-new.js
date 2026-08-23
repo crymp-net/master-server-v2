@@ -11,6 +11,7 @@ function changeProfilePicture() {
             processData: false,
             contentType: file.type || "application/octet-stream",
         }).done(function(resp) {
+            console.log(resp);
             if (!resp.error) {
                 document.getElementById('profile-picture').style.backgroundImage = "url(\"" + resp.path + "\")";
             } else {

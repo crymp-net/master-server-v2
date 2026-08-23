@@ -177,7 +177,11 @@ function web:getPicture(user)
     if not user.picture or #user.picture <= 1 then 
         return "/static/images/face.png"
     else
-        return user.picture:gsub("%.?%.?/?static/", "/static/ucg/profile/")
+        if user.picture:match("^/static/ucg/profile") then
+            return user.picture
+        else
+            return user.picture:gsub("%.?%.?/?static/", "/static/ucg/profile/")
+        end
     end
 end
 
@@ -877,8 +881,8 @@ end
 function web:updateProfilePicture(user, rawData)
     local resolve, resolver = aio:prepare_promise()
     local before = user.picture
-    local path = "static/ucg/profile/" .. hash(string.format("%d:profile:%s", user.id, os.date())) .. ".jpg"
-    local f, err = io.open("crymp/public_html/" .. path, "wb")
+    local path = "/static/ucg/profile/" .. hash(string.format("%d:profile:%s", user.id, os.date())) .. ".jpg"
+    local f, err = io.open("crymp/public_html" .. path, "wb")
     if not f then
         resolve({error = "Write error"})
     else
@@ -888,7 +892,7 @@ function web:updateProfilePicture(user, rawData)
         if before ~= nil and before ~= "" and before ~= "0" then
             local path = self:getPicture(user)
             if not path:find(".png") then
-                os.remove(path)
+                os.remove("crymp/public_html" .. path)
             end
         end
 

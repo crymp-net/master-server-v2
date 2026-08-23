@@ -1,5 +1,10 @@
 <?include ../shared.priv.html ?><?lu
     header("content-type", "application/json; charset=utf-8")    
+    if #body > 5 * 1024 * 1024 then
+        status("500 Internal server error")
+        write({error = "Maximum upload size is 5MB and the only accepted format is JPEG"})
+        return
+    end
     if session.logged and query.e and tonumber(query.e.user) == session.logged.id then
         if jpeg and jpeg.resize then
             local ok, result = pcall(jpeg.resize, body, 480 * 480)

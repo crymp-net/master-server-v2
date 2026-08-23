@@ -57,7 +57,7 @@ CC="${CC:-gcc}"
 mkdir -p bin
 
 DEFINES=""
-LIBS="-lm -ldl -lpthread"
+LIBS="-lm -ldl -lpthread -ljpeg"
 
 if [ "$(uname -o)" = "Msys" ]; then
   SO_EXT="dll"
